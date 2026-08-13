@@ -9,7 +9,7 @@ import { useApp } from '@/lib/app-context';
 import { useToast } from '@/components/toast';
 import * as db from '@/lib/db';
 import { cn, timeAgo, formatDateTime } from '@/lib/utils';
-import { RefreshCw, MapPin, Check, X, Camera, Loader2, Eye, Leaf, Trash2, Clock } from 'lucide-react';
+import { RefreshCw, MapPin, Check, X, Camera, Loader2, Eye, Leaf, Trash2, Clock, Info, ShieldCheck, Zap } from 'lucide-react';
 
 export default function RtSamplingPage() {
   return (
@@ -77,6 +77,26 @@ function SamplingContent() {
     }
   };
 
+  // 1-Click Fast Sampling for Demo Testing
+  const handleQuickSampling = (citizen: db.DemoUser, status: db.SamplingStatus) => {
+    if (!user) return;
+    const result = db.addSampling(user.id, citizen.id, status, null, -5.14766, 119.43273);
+    load();
+    if (result.anomaly) {
+      showToast(
+        'konflik',
+        'Anomali Dibuat!',
+        `${citizen.full_name} tercatat ${status === 'PATUH' ? 'PATUH' : 'TIDAK PATUH'}. Anomali konflik dikirim ke DLH.`
+      );
+    } else {
+      showToast(
+        'success',
+        'Sampling Tersimpan (Fast 1-Click)',
+        `${citizen.full_name} tercatat ${status === 'PATUH' ? 'PATUH' : 'TIDAK PATUH'}${status === 'PATUH' ? ' (+5 poin)' : ''}.`
+      );
+    }
+  };
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,12 +119,6 @@ function SamplingContent() {
     } else {
       setGpsStatus('fail');
     }
-  };
-
-  const handlePick = (citizen: db.DemoUser, status: db.SamplingStatus) => {
-    setActive({ citizen, status });
-    setPhoto(null);
-    setCameraOpen(true);
   };
 
   const handleCapture = (dataUrl: string) => {
@@ -155,9 +169,9 @@ function SamplingContent() {
     <div className="space-y-4 max-w-5xl">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="font-lexend font-extrabold text-xl text-on-surface">Pendataan Mingguan & Sampling RT</h1>
+          <h1 className="font-lexend font-extrabold text-xl text-on-surface">Pendataan & Sampling RT</h1>
           <p className="text-xs text-on-surface-variant mt-0.5">
-            Kel. {user.kelurahan} • RT {user.rt} / RW {user.rw} — Verifikasi laporan & sampling foto + GPS
+            Kel. {user.kelurahan} • RT {user.rt} / RW {user.rw} — Verifikasi 1-Click & Sidak Lapangan
           </p>
         </div>
         <button
@@ -167,6 +181,18 @@ function SamplingContent() {
         >
           <RefreshCw className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* BANNER PENJELASAN SISTEM SAMPLING VERIFIKASI RT */}
+      <div className="bg-gradient-to-r from-emerald-900 to-teal-950 text-white rounded-3xl p-4 shadow-card border border-emerald-700/30 space-y-2">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-accent-400 shrink-0" />
+          <h3 className="font-lexend font-bold text-xs text-white">Apa itu Sampling & Verifikasi RT?</h3>
+        </div>
+        <p className="text-[11px] text-emerald-100/90 leading-relaxed">
+          <strong>Maksud Patuh:</strong> Tingkat kesadaran warga memilah sampah (Organik & Anorganik) dari rumah. <br />
+          <strong>Diverifikasi oleh:</strong> <u>Ketua RT ({user.full_name})</u> secara resmi. Anda dapat menyetujui/menolak laporan warga dalam <strong>1 Klik</strong> di bawah ini, atau melakukan sidak acak warga.
+        </p>
       </div>
 
       {/* ANTREAN LAPORAN PENDING & SAMPLING */}
@@ -255,7 +281,7 @@ function SamplingContent() {
                         </span>
                       </div>
 
-                      {/* TOMBOL AKSI VERIFIKASI PENDING */}
+                      {/* TOMBOL AKSI VERIFIKASI PENDING (1-KLIK PROSES) */}
                       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-amber-200/80">
                         <button
                           onClick={(e) => {
@@ -263,6 +289,7 @@ function SamplingContent() {
                             handleVerifySingleReport(w, report, true);
                           }}
                           className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-[0.98] shadow-sm"
+                          title="Setujui dalam 1 Klik"
                         >
                           <Check className="w-4 h-4 shrink-0" /> Setujui Patuh (+5 Pts)
                         </button>
@@ -272,6 +299,7 @@ function SamplingContent() {
                             handleVerifySingleReport(w, report, false);
                           }}
                           className="bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-[0.98] shadow-sm"
+                          title="Tolak dalam 1 Klik"
                         >
                           <X className="w-4 h-4 shrink-0" /> Tolak Laporan
                         </button>
@@ -280,11 +308,28 @@ function SamplingContent() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-3.5 py-3 text-[11px] text-slate-500 font-medium flex items-center justify-between">
-                  <span>Belum ada laporan sampah baru yang perlu diverifikasi</span>
-                  <span className="text-[10px] bg-slate-200/60 text-slate-600 font-bold px-2 py-0.5 rounded-md">
-                    Bersih / Nihil
-                  </span>
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium text-[11px]">Belum ada laporan pending baru</span>
+                    <span className="text-[10px] bg-slate-200/70 text-slate-700 font-bold px-2 py-0.5 rounded-md">
+                      Bersih / Nihil
+                    </span>
+                  </div>
+                  {/* QUICK TESTING BUTTONS FOR RT SAMPLING */}
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
+                    <button
+                      onClick={() => handleQuickSampling(w, 'PATUH')}
+                      className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-extrabold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-emerald-600" /> Fast-Test: Sidak Patuh
+                    </button>
+                    <button
+                      onClick={() => handleQuickSampling(w, 'TIDAK')}
+                      className="bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-[11px] font-extrabold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition"
+                    >
+                      <Zap className="w-3.5 h-3.5 text-rose-600" /> Fast-Test: Trigger Anomali
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
