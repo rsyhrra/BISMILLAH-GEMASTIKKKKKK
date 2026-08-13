@@ -8,7 +8,7 @@ import StatusBadge from '@/components/status-badge';
 import { useApp } from '@/lib/app-context';
 import { useToast } from '@/components/toast';
 import * as db from '@/lib/db';
-import { cn } from '@/lib/utils';
+import { cn, timeAgo } from '@/lib/utils';
 import { RefreshCw, MapPin, Check, X, Camera, Loader2 } from 'lucide-react';
 
 export default function RtSamplingPage() {
@@ -160,7 +160,12 @@ function SamplingContent() {
           return (
             <div
               key={w.id}
-              className="bg-white rounded-2xl border border-slate-200/80 shadow-card p-4 space-y-3"
+              className={cn(
+                'bg-white rounded-2xl border p-4 space-y-3 transition',
+                lastReport?.status === 'PENDING'
+                  ? 'border-amber-300 bg-amber-50/20 shadow-md'
+                  : 'border-slate-200/80 shadow-card'
+              )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
@@ -168,9 +173,14 @@ function SamplingContent() {
                     {w.full_name.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-lexend font-bold text-sm text-on-surface truncate">{w.full_name}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="font-lexend font-extrabold text-sm text-on-surface truncate">{w.full_name}</p>
+                      <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-mono">
+                        {w.email}
+                      </span>
+                    </div>
                     <p className="text-[11px] text-on-surface-variant truncate">
-                      Jl. {w.kelurahan} No. {idx + 1} • {points} Pts
+                      NIK: {w.nik} • {points} Pts
                     </p>
                   </div>
                 </div>
@@ -181,20 +191,42 @@ function SamplingContent() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                  <p className="text-on-surface-variant font-semibold">Laporan Mandiri</p>
-                  <p className="font-bold text-on-surface mt-0.5">
-                    {lastReport ? `Patuh (${lastReport.type === 'ORGANIK' ? 'Organik' : 'Anorganik'})` : 'Belum Lapor'}
-                  </p>
+              {/* BUKTI FOTO LAPORAN MANDIRI WARGA */}
+              {lastReport ? (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {lastReport.photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={lastReport.photo}
+                        alt="Foto Laporan Warga"
+                        className="w-12 h-12 rounded-lg object-cover border border-slate-300 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-lg shrink-0">
+                        {lastReport.type === 'ORGANIK' ? '🌱' : '♻️'}
+                      </div>
+                    )}
+                    <div className="text-xs min-w-0">
+                      <p className="font-extrabold text-on-surface flex items-center gap-1.5 flex-wrap">
+                        Laporan Mandiri: {lastReport.type === 'ORGANIK' ? 'Organik' : 'Anorganik'}
+                        {lastReport.status === 'PENDING' && (
+                          <span className="text-[9px] bg-amber-100 text-amber-800 font-extrabold px-2 py-0.5 rounded-full border border-amber-200">
+                            Menunggu Verifikasi RT
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-on-surface-variant">
+                        Dikirim: {timeAgo(lastReport.created_at)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                  <p className="text-on-surface-variant font-semibold">Terakhir RT</p>
-                  <p className="font-bold text-on-surface mt-0.5">
-                    {lastSampling ? (lastSampling.status === 'PATUH' ? 'Patuh' : 'Tidak Patuh') : 'Belum Ada'}
-                  </p>
+              ) : (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] text-on-surface-variant font-medium">
+                  Belum mengirim laporan pemilahan mandiri
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2.5">
                 <button

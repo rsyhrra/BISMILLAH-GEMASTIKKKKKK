@@ -16,12 +16,12 @@ const ROLE_OPTIONS: { role: Role; label: string; desc: string; icon: React.React
   { role: 'ADMIN_DLH', label: 'Admin DLH', desc: 'Dashboard & intervensi', icon: <Building2 className="w-4 h-4" /> },
 ];
 
-const DEMO_LOGIN: { role: Role; email: string; label: string; color: string }[] = [
-  { role: 'WARGA', email: 'warga1@test.com', label: 'Warga', color: 'bg-emerald-500' },
-  { role: 'RT_RW', email: 'rt1@test.com', label: 'Ketua RT', color: 'bg-blue-500' },
-  { role: 'PENGANGKUT', email: 'driver@test.com', label: 'Pengangkut', color: 'bg-amber-500' },
-  { role: 'PENGAWAS_TPA', email: 'tpa@test.com', label: 'Pengawas TPA', color: 'bg-indigo-500' },
-  { role: 'ADMIN_DLH', email: 'dlh@test.com', label: 'Admin DLH', color: 'bg-purple-600' },
+const DEMO_LOGIN: { role: Role; email: string; label: string; name: string; color: string }[] = [
+  { role: 'WARGA', email: 'warga1@test.com', label: 'Warga', name: 'Andi Pratama', color: 'bg-emerald-500' },
+  { role: 'RT_RW', email: 'rt1@test.com', label: 'Ketua RT', name: 'H. Syamsuddin', color: 'bg-blue-500' },
+  { role: 'PENGANGKUT', email: 'driver@test.com', label: 'Pengangkut', name: 'Budi Transport', color: 'bg-amber-500' },
+  { role: 'PENGAWAS_TPA', email: 'tpa@test.com', label: 'Pengawas TPA', name: 'Pak Slamet', color: 'bg-indigo-500' },
+  { role: 'ADMIN_DLH', email: 'dlh@test.com', label: 'Admin DLH', name: 'Admin DLH', color: 'bg-purple-600' },
 ];
 
 export default function LoginPage() {
@@ -203,10 +203,15 @@ function LoginContent() {
                   key={d.role}
                   onClick={() => handleQuick(d.role, d.email)}
                   disabled={loading}
-                  className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-on-surface py-2.5 px-2 rounded-xl flex items-center justify-center gap-1.5 transition disabled:opacity-50"
+                  className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-on-surface py-2.5 px-2 rounded-xl flex flex-col items-center justify-center transition disabled:opacity-50 text-center"
                 >
-                  <span className={cn('w-2 h-2 rounded-full', d.color)}></span>
-                  {d.label}
+                  <div className="flex items-center gap-1.5 font-extrabold text-[11px]">
+                    <span className={cn('w-2 h-2 rounded-full', d.color)}></span>
+                    {d.label}
+                  </div>
+                  <span className="text-[10px] text-on-surface-variant font-medium mt-0.5 truncate max-w-full">
+                    {d.name}
+                  </span>
                 </button>
               ))}
             </div>
