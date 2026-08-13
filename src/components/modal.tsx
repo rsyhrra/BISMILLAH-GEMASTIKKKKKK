@@ -50,7 +50,7 @@ export default function Modal({
     >
       <div
         className={cn(
-          'bg-white w-full rounded-3xl shadow-2xl border border-slate-200 flex flex-col max-h-[88vh] animate-pop-in',
+          'bg-white w-full rounded-3xl shadow-2xl border border-slate-200 flex flex-col max-h-[88vh] max-w-[calc(100vw-2rem)] animate-pop-in',
           SIZES[size]
         )}
         onClick={(e) => e.stopPropagation()}

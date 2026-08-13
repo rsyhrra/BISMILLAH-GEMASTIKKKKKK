@@ -83,10 +83,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-background text-on-background font-sans bg-weave-pattern flex flex-col">
+    <div className="min-h-screen min-h-[100dvh] bg-background text-on-background font-sans bg-weave-pattern flex flex-col overflow-x-hidden w-full max-w-full">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/70">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/70 w-full">
+        <div className="max-w-6xl w-full mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <Link href={nav[0]?.href ?? '/login'} className="flex items-center gap-2 shrink-0">
             <span className="w-8 h-8 rounded-xl bg-primary-700 text-white flex items-center justify-center font-lexend font-black text-sm shadow-md shadow-primary-700/30">
               P
@@ -126,7 +126,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto flex gap-6 px-4">
+      <div className="max-w-6xl w-full mx-auto flex gap-6 px-4 min-w-0">
         {/* DESKTOP SIDEBAR */}
         <aside className="hidden lg:block w-60 shrink-0 sticky top-20 self-start py-6">
           <div className="bg-white rounded-3xl border border-slate-200/80 shadow-card p-4 space-y-5">
@@ -173,7 +173,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* CONTENT */}
-        <main className="flex-1 min-w-0 py-6 pb-20 lg:pb-10">{children}</main>
+        <main className="flex-1 min-w-0 py-6 pb-20 lg:pb-10 w-full max-w-full overflow-x-hidden">{children}</main>
       </div>
 
       {/* MOBILE BOTTOM NAV */}
