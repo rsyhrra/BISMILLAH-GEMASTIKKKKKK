@@ -7,12 +7,15 @@
   --foreground: #052e16;
 }
 
+html,
 body {
   color: var(--foreground);
   background-color: var(--background);
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
 }
 
 .font-lexend {
@@ -21,7 +24,7 @@ body {
 
 /* Safe area for bottom nav */
 .pb-safe {
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
 }
 
 /* Subtle weave pattern for South Sulawesi identity */

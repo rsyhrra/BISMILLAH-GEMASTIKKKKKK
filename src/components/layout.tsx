@@ -83,9 +83,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-sans bg-weave-pattern">
+    <div className="min-h-screen min-h-[100dvh] bg-background text-on-background font-sans bg-weave-pattern flex flex-col">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/70">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/70">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <Link href={nav[0]?.href ?? '/login'} className="flex items-center gap-2 shrink-0">
             <span className="w-8 h-8 rounded-xl bg-primary-700 text-white flex items-center justify-center font-lexend font-black text-sm shadow-md shadow-primary-700/30">
@@ -173,11 +173,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* CONTENT */}
-        <main className="flex-1 min-w-0 py-6 pb-24 lg:pb-10">{children}</main>
+        <main className="flex-1 min-w-0 py-6 pb-20 lg:pb-10">{children}</main>
       </div>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-3 pt-1 pb-safe shadow-[0_-4px_25px_rgba(15,23,42,0.1)]">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-slate-200/80 px-3 pt-1 pb-safe shadow-[0_-4px_25px_rgba(15,23,42,0.12)]">
         <div
           className="max-w-md mx-auto grid gap-1 items-center"
           style={{ gridTemplateColumns: `repeat(${navWithNotif.length}, minmax(0, 1fr))` }}
