@@ -43,7 +43,7 @@ function NotifikasiContent() {
     } else if (user.role === 'WARGA') {
       setKonflik(db.getKonflik().filter((k) => k.citizen_id === user.id));
     } else if (user.role === 'ADMIN_DLH') {
-      setKonflik(db.getKonflik().filter((k) => k.status === 'ESKALASI' || k.status === 'AKTIF'));
+      setKonflik(db.getKonflik().filter((k) => k.status === 'ESKALASI' || k.status === 'SELESAI'));
     } else {
       // PENGANGKUT & PENGAWAS_TPA rely on operational logs, not citizen vs RT disputes!
       setKonflik([]);
@@ -70,7 +70,7 @@ function NotifikasiContent() {
 
   if (!user) return null;
 
-  const activeKonflik = konflik.filter((k) => k.status === 'AKTIF');
+  const activeKonflik = konflik.filter((k) => k.status === 'AKTIF' || k.status === 'ESKALASI');
 
   const roleSubtitle =
     user.role === 'WARGA' || user.role === 'RT_RW'
@@ -94,9 +94,9 @@ function NotifikasiContent() {
       {konflik.length > 0 && (
         <section className="space-y-3">
           <h2 className="font-lexend font-bold text-sm text-on-surface px-0.5">
-            Konflik Aktif{' '}
+            Konflik & Anomali Pemilahan{' '}
             {activeKonflik.length > 0 && (
-              <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ml-1">
+              <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ml-1 font-extrabold">
                 {activeKonflik.length}
               </span>
             )}
@@ -105,23 +105,28 @@ function NotifikasiContent() {
           {konflik.map((k) => {
             const citizen = db.getUser(k.citizen_id);
             const resolved = k.status === 'SELESAI';
+            const isEskalasi = k.status === 'ESKALASI';
+
             return (
               <div
                 key={k.id}
                 className={`bg-white rounded-2xl border p-4 shadow-card ${
-                  resolved ? 'border-primary-200' : 'border-accent-300/70'
+                  resolved ? 'border-primary-200' : isEskalasi ? 'border-indigo-300' : 'border-accent-300/70'
                 }`}
               >
                 <div className="flex justify-between items-start gap-3">
                   <div className="min-w-0">
                     <p className="font-lexend font-bold text-xs text-on-surface truncate">
-                      {citizen?.full_name ?? 'Warga'}
+                      {citizen?.full_name ?? 'Warga'} ({citizen?.email ?? 'warga@demo.com'})
                     </p>
                     <p className="text-[11px] text-on-surface-variant mt-0.5">
                       Kel. {k.kelurahan} • {timeAgo(k.created_at)}
                     </p>
                   </div>
-                  <StatusBadge variant={resolved ? 'selesai' : 'anomali'} />
+                  <StatusBadge
+                    variant={resolved ? 'selesai' : isEskalasi ? 'eskalasi' : 'anomali'}
+                    label={resolved ? 'Selesai' : isEskalasi ? 'Dinaikkan ke DLH' : 'Anomali RT'}
+                  />
                 </div>
 
                 <div className="mt-3 flex items-center gap-2 text-[11px] font-bold">
@@ -134,7 +139,13 @@ function NotifikasiContent() {
                   </span>
                 </div>
 
-                {!resolved && user.role === 'RT_RW' && (
+                {isEskalasi && !resolved && (
+                  <p className="mt-3 text-[11px] text-indigo-900 bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2.5 leading-relaxed font-medium">
+                    🏛️ Kasus dinaikkan ke DLH. Tindak lanjut & putusan final dilakukan di menu <strong>Intervensi & Arbitrasi DLH</strong>.
+                  </p>
+                )}
+
+                {!isEskalasi && !resolved && user.role === 'RT_RW' && (
                   <button
                     onClick={() => {
                       setSelected(k);
@@ -142,17 +153,19 @@ function NotifikasiContent() {
                     }}
                     className="mt-3 w-full bg-primary-700 hover:bg-primary-600 text-white text-xs font-extrabold py-2.5 rounded-xl transition"
                   >
-                    Tandai Selesai
+                    Tandai Selesai RT
                   </button>
                 )}
-                {!resolved && user.role !== 'RT_RW' && (
-                  <p className="mt-3 text-[11px] text-accent-700 bg-accent-50 border border-accent-100 rounded-xl px-3 py-2.5">
-                    Menunggu tindak lanjut Ketua RT.
+
+                {!isEskalasi && !resolved && user.role === 'WARGA' && (
+                  <p className="mt-3 text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+                    ⏳ Menunggu tindak lanjut / klarifikasi dari Ketua RT.
                   </p>
                 )}
+
                 {resolved && (
                   <p className="mt-3 text-[11px] text-on-surface-variant bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 leading-relaxed">
-                    {k.catatan}
+                    ✅ {k.catatan || 'Sengketa telah diselesaikan.'}
                   </p>
                 )}
               </div>
