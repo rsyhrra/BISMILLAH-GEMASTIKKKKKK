@@ -96,7 +96,7 @@ export default function RegisterPage() {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleRegister} className="space-y-4" suppressHydrationWarning>
               <div>
                 <label className="block text-xs font-bold text-on-surface mb-1">Nama Lengkap</label>
                 <input

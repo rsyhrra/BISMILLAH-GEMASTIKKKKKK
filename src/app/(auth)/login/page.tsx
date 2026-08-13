@@ -86,7 +86,7 @@ function LoginContent() {
             PILAH<span className="text-white/80">.ki</span>
           </h1>
           <p className="text-white/80 text-xs font-medium max-w-xs mx-auto">
-            PWA Pemantauan Kepatuhan Pemilahan Sampah Rumah Tangga Kota Makassar
+            Aplikasi Kepatuhan Pemilahan Sampah Rumah Tangga Kota Makassar
           </p>
         </div>
 
@@ -125,7 +125,7 @@ function LoginContent() {
           </div>
 
           {/* FORM */}
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4" suppressHydrationWarning>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl flex items-center gap-2 font-bold">
                 <ShieldCheck className="w-4 h-4 text-red-500" /> {error}
@@ -144,6 +144,7 @@ function LoginContent() {
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="warga1@test.com"
+                  suppressHydrationWarning
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-xs text-on-surface placeholder-slate-400 focus:outline-none focus:border-primary-700 focus:ring-2 focus:ring-primary-500/20 transition font-medium"
                 />
               </div>
@@ -164,6 +165,7 @@ function LoginContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  suppressHydrationWarning
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-10 py-3 text-xs text-on-surface placeholder-slate-400 focus:outline-none focus:border-primary-700 focus:ring-2 focus:ring-primary-500/20 transition font-medium"
                 />
                 <button
