@@ -38,6 +38,7 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   ],
   RT_RW: [
     { href: '/rt/sampling', label: 'Sampling', icon: ClipboardCheck },
+    { href: '/rt/riwayat', label: 'Riwayat', icon: History },
     { href: '/rt/anomali', label: 'Anomali', icon: AlertTriangle },
   ],
   ADMIN_DLH: [
