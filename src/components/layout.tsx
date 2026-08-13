@@ -173,7 +173,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* CONTENT */}
-        <main className="flex-1 min-w-0 py-6 pb-20 lg:pb-10 w-full max-w-full overflow-x-hidden">{children}</main>
+        <main className="flex-1 min-w-0 py-6 pb-28 lg:pb-12 w-full max-w-full overflow-x-hidden">{children}</main>
       </div>
 
       {/* MOBILE BOTTOM NAV */}

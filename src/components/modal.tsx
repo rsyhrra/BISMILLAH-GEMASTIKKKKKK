@@ -45,12 +45,12 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-[120] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-[120] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 pb-20 sm:pb-4 animate-fade-in"
       onClick={onClose}
     >
       <div
         className={cn(
-          'bg-white w-full rounded-3xl shadow-2xl border border-slate-200 flex flex-col max-h-[88vh] max-w-[calc(100vw-2rem)] animate-pop-in',
+          'bg-white w-full rounded-3xl shadow-2xl border border-slate-200 flex flex-col max-h-[80vh] sm:max-h-[86vh] max-w-[calc(100vw-2rem)] animate-pop-in overflow-hidden',
           SIZES[size]
         )}
         onClick={(e) => e.stopPropagation()}
