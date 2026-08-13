@@ -60,6 +60,8 @@ export interface Report {
   points: number;
   photo: string | null;
   created_at: string;
+  audit_source?: 'RT_SOLVED' | 'DLH_WARGA_VALID' | 'DLH_RT_VALID';
+  audit_note?: string;
 }
 
 export interface SamplingRecord {
@@ -864,11 +866,14 @@ export function resolveKonflik(id: string, catatan: string): Konflik | null {
   // When RT resolves locally, RT approves/accepts the citizen report & awards points!
   if (citizen) {
     citizen.siri_points += 5;
-    const rejectedReport = db.reports.find(
-      (r) => r.citizen_id === konflik.citizen_id && r.status === 'REJECTED'
+    const reportToUpdate = db.reports.find(
+      (r) => r.citizen_id === konflik.citizen_id && (r.status === 'REJECTED' || r.status === 'PENDING')
     );
-    if (rejectedReport) {
-      rejectedReport.status = 'APPROVED';
+    if (reportToUpdate) {
+      reportToUpdate.status = 'APPROVED';
+      reportToUpdate.points = 5;
+      reportToUpdate.audit_source = 'RT_SOLVED';
+      reportToUpdate.audit_note = catatan || 'Pernah Melalui Anomali (Sengketa diselesaikan di tingkat RT & dinyatakan Patuh)';
     }
   }
 
@@ -878,6 +883,16 @@ export function resolveKonflik(id: string, catatan: string): Konflik | null {
     title: '🎉 Sengketa Diselesaikan RT',
     message: `Tindak lanjut Ketua RT: ${catatan || 'Laporan Anda disetujui & dinyatakan Patuh (+5 Poin).' }`,
     type: 'success',
+    read: false,
+    created_at: new Date().toISOString(),
+  });
+
+  db.notifications.push({
+    id: uid('N'),
+    user_id: konflik.rt_id,
+    title: `Kasus Anomali ${citizen?.full_name ?? 'Warga'} Selesai`,
+    message: `Sengketa dengan KK ${citizen?.full_name ?? 'Warga'} telah diselesaikan secara musyawarah di tingkat RT.`,
+    type: 'info',
     read: false,
     created_at: new Date().toISOString(),
   });
@@ -904,6 +919,17 @@ export function eskalasiKonflik(id: string, catatan: string): Konflik | null {
     created_at: new Date().toISOString(),
   });
 
+  // Notifikasi ke RT
+  db.notifications.push({
+    id: uid('N'),
+    user_id: konflik.rt_id,
+    title: 'Eskalasi ke DLH Berhasil',
+    message: `Sengketa anomali KK ${konflik.citizen_id} telah dinaikkan ke DLH untuk proses arbitrasi resmi.`,
+    type: 'info',
+    read: false,
+    created_at: new Date().toISOString(),
+  });
+
   saveDB();
   return konflik;
 }
@@ -916,14 +942,25 @@ export function resolveKonflikDLH(id: string, decision: 'WARGA_VALID' | 'RT_VALI
   konflik.catatan = `Putusan Final DLH [${decision === 'WARGA_VALID' ? 'Laporan Warga Valid' : 'Sampling RT Valid'}]: ${catatan}`;
 
   const citizen = db.users.find((u) => u.id === konflik.citizen_id);
-  if (citizen && decision === 'WARGA_VALID') {
-    citizen.siri_points += 10;
-    // Update rejected report to APPROVED if DLH rules in favor of citizen!
-    const rejectedReport = db.reports.find(
-      (r) => r.citizen_id === konflik.citizen_id && r.status === 'REJECTED'
-    );
-    if (rejectedReport) {
-      rejectedReport.status = 'APPROVED';
+  const targetReport = db.reports.find(
+    (r) => r.citizen_id === konflik.citizen_id && (r.status === 'REJECTED' || r.status === 'PENDING')
+  ) || db.reports.find((r) => r.citizen_id === konflik.citizen_id);
+
+  if (decision === 'WARGA_VALID') {
+    if (citizen) citizen.siri_points += 10;
+    if (targetReport) {
+      targetReport.status = 'APPROVED';
+      targetReport.points = 10;
+      targetReport.audit_source = 'DLH_WARGA_VALID';
+      targetReport.audit_note = `Putusan Final DLH: Warga Valid (${catatan || 'Laporan warga terbukti patuh & valid'})`;
+    }
+  } else {
+    // RT_VALID
+    if (targetReport) {
+      targetReport.status = 'REJECTED';
+      targetReport.points = 0;
+      targetReport.audit_source = 'DLH_RT_VALID';
+      targetReport.audit_note = `Putusan Final DLH: Sampling RT Valid (${catatan || 'Penolakan RT dinyatakan sah & valid'})`;
     }
   }
 
@@ -933,8 +970,8 @@ export function resolveKonflikDLH(id: string, decision: 'WARGA_VALID' | 'RT_VALI
     user_id: konflik.citizen_id,
     title: decision === 'WARGA_VALID' ? '🎉 Putusan DLH: Laporan Anda Valid' : '❌ Putusan DLH: Penolakan RT Sah',
     message: decision === 'WARGA_VALID'
-      ? 'DLH memenangkan laporan Anda. Poin +10 diberikan & status laporan diubah menjadi Disetujui.'
-      : 'DLH mengonfirmasi penolakan RT. Status laporan tetap Ditolak.',
+      ? 'DLH memenangkan laporan Anda. Status laporan diubah menjadi Disetujui (+10 Poin).'
+      : 'DLH mengonfirmasi penolakan RT. Status laporan tetap Ditolak secara final.',
     type: decision === 'WARGA_VALID' ? 'success' : 'konflik',
     read: false,
     created_at: new Date().toISOString(),
@@ -944,8 +981,10 @@ export function resolveKonflikDLH(id: string, decision: 'WARGA_VALID' | 'RT_VALI
   db.notifications.push({
     id: uid('N'),
     user_id: konflik.rt_id,
-    title: `Putusan DLH Kasus ${citizen?.full_name ?? 'Warga'}`,
-    message: `Keputusan DLH: ${decision === 'WARGA_VALID' ? 'Laporan Warga Valid (Status laporan diubah jadi Disetujui)' : 'Sampling RT Valid (Tetap Ditolak)'}.`,
+    title: `📢 Putusan DLH Kasus ${citizen?.full_name ?? 'Warga'}`,
+    message: decision === 'WARGA_VALID'
+      ? `DLH memutuskan: Laporan Warga VALID. Status laporan warga diubah menjadi Disetujui (+10 Poin).`
+      : `DLH memutuskan: Sampling RT VALID. Penolakan RT Anda dinyatakan Sah & Final.`,
     type: 'info',
     read: false,
     created_at: new Date().toISOString(),

@@ -69,11 +69,40 @@ export default function ReportDetailModal({
           </div>
         </div>
 
-        <div className="text-[11px] text-on-surface-variant leading-relaxed bg-primary-50 border border-primary-100 rounded-2xl p-3">
-          {report.status === 'APPROVED' && 'Laporan Anda telah diverifikasi dan dinyatakan patuh. Poin sudah ditambahkan.'}
-          {report.status === 'PENDING' && 'Laporan menunggu pendataan/sampling oleh pengurus RT di wilayah Anda.'}
-          {report.status === 'REJECTED' && 'Laporan Anda ditolak karena hasil sampling RT menemukan ketidaksesuaian.'}
-        </div>
+        {report.audit_source === 'RT_SOLVED' && (
+          <div className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-3 space-y-1">
+            <p className="font-extrabold flex items-center gap-1 text-amber-800">
+              ⚠️ Notice Anomali: Klarifikasi RT Selesai
+            </p>
+            <p className="leading-relaxed">{report.audit_note || 'Laporan ini pernah melalui anomali RT dan telah disetujui setelah klarifikasi RT.'}</p>
+          </div>
+        )}
+
+        {report.audit_source === 'DLH_WARGA_VALID' && (
+          <div className="text-[11px] text-indigo-950 bg-indigo-50 border border-indigo-200 rounded-2xl p-3 space-y-1">
+            <p className="font-extrabold flex items-center gap-1 text-indigo-800">
+              🏛️ Notice Arbitrasi DLH: Warga Valid
+            </p>
+            <p className="leading-relaxed">{report.audit_note || 'Putusan Final DLH memenangkan Warga. Laporan dinyatakan Valid (+10 Poin).'}</p>
+          </div>
+        )}
+
+        {report.audit_source === 'DLH_RT_VALID' && (
+          <div className="text-[11px] text-rose-950 bg-rose-50 border border-rose-200 rounded-2xl p-3 space-y-1">
+            <p className="font-extrabold flex items-center gap-1 text-rose-800">
+              🏛️ Notice Arbitrasi DLH: Sampling RT Valid
+            </p>
+            <p className="leading-relaxed">{report.audit_note || 'Putusan Final DLH mengonfirmasi penolakan RT Sah & Valid.'}</p>
+          </div>
+        )}
+
+        {!report.audit_source && (
+          <div className="text-[11px] text-on-surface-variant leading-relaxed bg-primary-50 border border-primary-100 rounded-2xl p-3">
+            {report.status === 'APPROVED' && 'Laporan Anda telah diverifikasi dan dinyatakan patuh. Poin sudah ditambahkan.'}
+            {report.status === 'PENDING' && 'Laporan menunggu pendataan/sampling oleh pengurus RT di wilayah Anda.'}
+            {report.status === 'REJECTED' && 'Laporan Anda ditolak karena hasil sampling RT menemukan ketidaksesuaian.'}
+          </div>
+        )}
 
         {report.status === 'PENDING' && onCancelReport && (
           <button

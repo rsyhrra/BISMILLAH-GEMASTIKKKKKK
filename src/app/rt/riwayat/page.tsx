@@ -29,8 +29,8 @@ function RiwayatContent() {
     setWargaList(warga);
     const reports: Record<string, db.Report[]> = {};
     warga.forEach((w) => {
-      // Only approved reports go into Riwayat Patuh RT
-      reports[w.id] = db.getReports(w.id).filter((r) => r.status === 'APPROVED');
+      // Include all processed reports (APPROVED or REJECTED)
+      reports[w.id] = db.getReports(w.id).filter((r) => r.status !== 'PENDING');
     });
     setReportsByCitizen(reports);
   };
@@ -48,7 +48,7 @@ function RiwayatContent() {
         <div>
           <h1 className="font-lexend font-extrabold text-xl text-on-surface">Riwayat Verifikasi Warga</h1>
           <p className="text-xs text-on-surface-variant mt-0.5">
-            Kel. {user.kelurahan} • RT {user.rt} / RW {user.rw} — Rekam jejak warga patuh terverifikasi
+            Kel. {user.kelurahan} • RT {user.rt} / RW {user.rw} — Rekam jejak verifikasi, anomali & putusan DLH
           </p>
         </div>
         <button
@@ -69,8 +69,9 @@ function RiwayatContent() {
         )}
 
         {wargaList.map((w) => {
-          const approvedReports = reportsByCitizen[w.id] ?? [];
-          const patuhCount = approvedReports.length;
+          const citizenReports = reportsByCitizen[w.id] ?? [];
+          const approvedCount = citizenReports.filter((r) => r.status === 'APPROVED').length;
+          const rejectedCount = citizenReports.filter((r) => r.status === 'REJECTED').length;
           const points = db.computePoints(w.id);
 
           return (
@@ -92,8 +93,13 @@ function RiwayatContent() {
                   </p>
                   <div className="flex items-center gap-2 pt-1 flex-wrap">
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      🟢 {patuhCount} Laporan Disetujui (Patuh)
+                      🟢 {approvedCount} Disetujui
                     </span>
+                    {rejectedCount > 0 && (
+                      <span className="text-[10px] bg-rose-100 text-rose-800 font-extrabold px-2.5 py-0.5 rounded-full border border-rose-200">
+                        🔴 {rejectedCount} Ditolak
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -131,14 +137,14 @@ function RiwayatContent() {
               if (citizenReports.length === 0) {
                 return (
                   <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center text-xs text-slate-500 font-medium">
-                    Belum ada riwayat laporan terdisiplin (Patuh) yang disetujui untuk warga ini.
+                    Belum ada riwayat laporan yang diproses untuk warga ini.
                   </div>
                 );
               }
               return citizenReports.map((rep) => (
                 <div
                   key={rep.id}
-                  className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-2.5 shadow-sm"
+                  className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-2 shadow-sm"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
@@ -163,12 +169,48 @@ function RiwayatContent() {
                         </p>
                       </div>
                     </div>
-                    <div className="shrink-0">
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Disetujui (+5 Pts)
-                      </span>
+                    <div className="shrink-0 text-right">
+                      {rep.audit_source === 'RT_SOLVED' ? (
+                        <span className="text-[10px] bg-amber-100 text-amber-900 font-extrabold px-2.5 py-1 rounded-full border border-amber-200 inline-block">
+                          🟢 Disetujui RT (Selesai RT) (+5 Pts)
+                        </span>
+                      ) : rep.audit_source === 'DLH_WARGA_VALID' ? (
+                        <span className="text-[10px] bg-indigo-100 text-indigo-900 font-extrabold px-2.5 py-1 rounded-full border border-indigo-200 inline-block">
+                          🏛️ Disetujui DLH (Warga Valid) (+10 Pts)
+                        </span>
+                      ) : rep.audit_source === 'DLH_RT_VALID' ? (
+                        <span className="text-[10px] bg-rose-100 text-rose-900 font-extrabold px-2.5 py-1 rounded-full border border-rose-200 inline-block">
+                          🔴 Ditolak DLH (RT Valid)
+                        </span>
+                      ) : rep.status === 'APPROVED' ? (
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-full border border-emerald-200 inline-block">
+                          🟢 Disetujui RT (+5 Pts)
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-rose-100 text-rose-800 font-extrabold px-2.5 py-1 rounded-full border border-rose-200 inline-block">
+                          🔴 Ditolak RT
+                        </span>
+                      )}
                     </div>
                   </div>
+
+                  {rep.audit_source === 'RT_SOLVED' && (
+                    <div className="bg-amber-100/60 border border-amber-200 text-amber-900 rounded-xl px-3 py-2 text-[11px] font-medium leading-tight">
+                      <strong>⚠️ Notice Anomali:</strong> Pernah melalui anomali RT & disetujui setelah klarifikasi RT.
+                    </div>
+                  )}
+
+                  {rep.audit_source === 'DLH_WARGA_VALID' && (
+                    <div className="bg-indigo-100/60 border border-indigo-200 text-indigo-950 rounded-xl px-3 py-2 text-[11px] font-medium leading-tight">
+                      <strong>🏛️ Notice Putusan DLH:</strong> Warga Valid (Menang Arbitrasi DLH, status di-override & Poin +10 diberikan).
+                    </div>
+                  )}
+
+                  {rep.audit_source === 'DLH_RT_VALID' && (
+                    <div className="bg-rose-100/60 border border-rose-200 text-rose-950 rounded-xl px-3 py-2 text-[11px] font-medium leading-tight">
+                      <strong>🏛️ Notice Putusan DLH:</strong> Sampling RT Valid (Menang Arbitrasi DLH, Penolakan RT Sah & Final).
+                    </div>
+                  )}
                 </div>
               ));
             })()}
