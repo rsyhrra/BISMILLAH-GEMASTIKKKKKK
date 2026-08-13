@@ -21,7 +21,7 @@ body {
 
 /* Safe area for bottom nav */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
 }
 
 /* Subtle weave pattern for South Sulawesi identity */

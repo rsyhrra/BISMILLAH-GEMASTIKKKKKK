@@ -173,11 +173,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* CONTENT */}
-        <main className="flex-1 min-w-0 py-6 pb-32 lg:pb-10">{children}</main>
+        <main className="flex-1 min-w-0 py-6 pb-24 lg:pb-10">{children}</main>
       </div>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-3 pb-safe shadow-[0_-4px_20px_rgba(15,23,42,0.08)]">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 px-3 pt-1 pb-safe shadow-[0_-4px_25px_rgba(15,23,42,0.1)]">
         <div
           className="max-w-md mx-auto grid gap-1 items-center"
           style={{ gridTemplateColumns: `repeat(${navWithNotif.length}, minmax(0, 1fr))` }}
@@ -190,17 +190,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'relative flex flex-col items-center justify-center gap-0.5 py-2 transition',
+                  'relative flex flex-col items-center justify-center gap-0.5 py-1.5 transition',
                   active ? 'text-primary-700 font-extrabold' : 'text-slate-400 font-medium hover:text-slate-600'
                 )}
               >
                 <div
                   className={cn(
-                    'w-10 h-10 rounded-2xl flex items-center justify-center transition',
+                    'w-9 h-9 rounded-2xl flex items-center justify-center transition',
                     active ? 'bg-primary-700 text-white shadow-md shadow-primary-700/25 scale-105' : 'bg-transparent text-slate-400'
                   )}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                 </div>
                 <span className="text-[9px] tracking-tight">{item.label}</span>
                 {item.href === '/notifikasi' && notifCount > 0 && (
