@@ -741,7 +741,7 @@ export function verifySingleReport(
         warga_status: 'PATUH',
         rt_status: 'TIDAK',
         status: 'AKTIF',
-        catatan: `Laporan sampah ${report.type} warga (${citizen.full_name}) ditolak RT.`,
+        catatan: `Laporan sampah ${report.type} warga (${citizen.full_name}) terdeteksi anomali pemilahan saat sampling RT.`,
         created_at: new Date().toISOString(),
       };
       db.konflik.unshift(konflik);

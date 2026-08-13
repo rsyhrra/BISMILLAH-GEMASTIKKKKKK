@@ -173,7 +173,8 @@ function AnomaliContent() {
 
               {k.catatan && (
                 <p className="text-[11px] text-on-surface-variant bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 leading-relaxed">
-                  <strong className="text-on-surface font-semibold">Catatan: </strong> {k.catatan}
+                  <strong className="text-on-surface font-semibold">Catatan: </strong>{' '}
+                  {k.catatan.replace(/ditolak RT/gi, 'terdeteksi anomali pemilahan saat sampling RT')}
                 </p>
               )}
             </div>

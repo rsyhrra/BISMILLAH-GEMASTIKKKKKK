@@ -144,70 +144,71 @@ function RiwayatContent() {
               return citizenReports.map((rep) => (
                 <div
                   key={rep.id}
-                  className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-2 shadow-sm"
+                  className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3 shadow-sm"
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <div className="flex items-center gap-3 min-w-0">
                       {rep.photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={rep.photo}
                           alt="Foto Laporan"
-                          className="w-12 h-12 rounded-xl object-cover border border-slate-300 shrink-0"
+                          className="w-11 h-11 rounded-xl object-cover border border-slate-300 shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-lg shrink-0">
+                        <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-base shrink-0">
                           {rep.type === 'ORGANIK' ? '🌱' : '♻️'}
                         </div>
                       )}
-                      <div className="text-xs min-w-0">
-                        <p className="font-extrabold text-on-surface">
+                      <div className="text-xs min-w-0 space-y-0.5">
+                        <p className="font-extrabold text-on-surface text-sm leading-snug">
                           Sampah {rep.type === 'ORGANIK' ? 'Organik (Sisa Makanan)' : 'Anorganik (Kemasan/Residu)'}
                         </p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">
+                        <p className="text-[11px] text-slate-400 font-medium">
                           {formatDateTime(rep.created_at)} ({timeAgo(rep.created_at)})
                         </p>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right">
+
+                    <div className="shrink-0 flex items-center pt-1 sm:pt-0">
                       {rep.audit_source === 'RT_SOLVED' ? (
-                        <span className="text-[10px] bg-amber-100 text-amber-900 font-extrabold px-2.5 py-1 rounded-full border border-amber-200 inline-block">
+                        <span className="text-[11px] bg-amber-100 text-amber-900 font-extrabold px-3 py-1 rounded-full border border-amber-200">
                           🟢 Disetujui RT (Selesai RT) (+5 Pts)
                         </span>
                       ) : rep.audit_source === 'DLH_WARGA_VALID' ? (
-                        <span className="text-[10px] bg-indigo-100 text-indigo-900 font-extrabold px-2.5 py-1 rounded-full border border-indigo-200 inline-block">
+                        <span className="text-[11px] bg-indigo-100 text-indigo-900 font-extrabold px-3 py-1 rounded-full border border-indigo-200">
                           🏛️ Disetujui DLH (Warga Valid) (+10 Pts)
                         </span>
                       ) : rep.audit_source === 'DLH_RT_VALID' ? (
-                        <span className="text-[10px] bg-rose-100 text-rose-900 font-extrabold px-2.5 py-1 rounded-full border border-rose-200 inline-block">
+                        <span className="text-[11px] bg-rose-100 text-rose-900 font-extrabold px-3 py-1 rounded-full border border-rose-200">
                           🔴 Ditolak DLH (RT Valid)
                         </span>
                       ) : rep.status === 'APPROVED' ? (
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-full border border-emerald-200 inline-block">
+                        <span className="text-[11px] bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full border border-emerald-200">
                           🟢 Disetujui RT (+5 Pts)
                         </span>
                       ) : (
-                        <span className="text-[10px] bg-rose-100 text-rose-800 font-extrabold px-2.5 py-1 rounded-full border border-rose-200 inline-block">
-                          🔴 Ditolak RT
+                        <span className="text-[11px] bg-rose-100 text-rose-800 font-extrabold px-3 py-1 rounded-full border border-rose-200">
+                          🔴 Ditolak DLH (Sampling RT Valid)
                         </span>
                       )}
                     </div>
                   </div>
 
                   {rep.audit_source === 'RT_SOLVED' && (
-                    <div className="bg-amber-100/60 border border-amber-200 text-amber-900 rounded-xl px-3 py-2 text-[11px] font-medium leading-tight">
+                    <div className="bg-amber-100/70 border border-amber-200/80 text-amber-950 rounded-xl px-3.5 py-2.5 text-[11px] font-medium leading-relaxed">
                       <strong>⚠️ Notice Anomali:</strong> Pernah melalui anomali RT & disetujui setelah klarifikasi RT.
                     </div>
                   )}
 
                   {rep.audit_source === 'DLH_WARGA_VALID' && (
-                    <div className="bg-indigo-100/60 border border-indigo-200 text-indigo-950 rounded-xl px-3 py-2 text-[11px] font-medium leading-tight">
+                    <div className="bg-indigo-100/70 border border-indigo-200/80 text-indigo-950 rounded-xl px-3.5 py-2.5 text-[11px] font-medium leading-relaxed">
                       <strong>🏛️ Notice Putusan DLH:</strong> Warga Valid (Menang Arbitrasi DLH, status di-override & Poin +10 diberikan).
                     </div>
                   )}
 
                   {rep.audit_source === 'DLH_RT_VALID' && (
-                    <div className="bg-rose-100/60 border border-rose-200 text-rose-950 rounded-xl px-3 py-2 text-[11px] font-medium leading-tight">
+                    <div className="bg-rose-100/70 border border-rose-200/80 text-rose-950 rounded-xl px-3.5 py-2.5 text-[11px] font-medium leading-relaxed">
                       <strong>🏛️ Notice Putusan DLH:</strong> Sampling RT Valid (Menang Arbitrasi DLH, Penolakan RT Sah & Final).
                     </div>
                   )}
