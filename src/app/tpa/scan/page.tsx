@@ -33,6 +33,7 @@ function TpaScanContent() {
   const { showToast } = useToast();
   const [manifests, setManifests] = useState<db.PickupManifest[]>([]);
   const [selected, setSelected] = useState<db.PickupManifest | null>(null);
+  const [mounted, setMounted] = useState(false);
   
   // Inspection Form State
   const [decision, setDecision] = useState<'APPROVE' | 'REJECT'>('APPROVE');
@@ -45,8 +46,11 @@ function TpaScanContent() {
   };
 
   useEffect(() => {
+    setMounted(true);
     load();
   }, []);
+
+  if (!mounted) return null;
 
   const handleOpenInspect = (m: db.PickupManifest) => {
     setSelected(m);

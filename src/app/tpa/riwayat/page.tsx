@@ -20,10 +20,14 @@ export default function TpaRiwayatPage() {
 function TpaRiwayatContent() {
   const { showToast } = useToast();
   const [manifests, setManifests] = useState<db.PickupManifest[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setManifests(db.getManifests());
   }, []);
+
+  if (!mounted) return null;
 
   const totalTonnage = manifests
     .filter((m) => m.status === 'APPROVED_TPA')

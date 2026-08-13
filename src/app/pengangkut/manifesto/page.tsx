@@ -20,10 +20,14 @@ export default function PengangkutManifestoPage() {
 function ManifestoContent() {
   const { user } = useApp();
   const [manifests, setManifests] = useState<db.PickupManifest[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setManifests(db.getManifests());
   }, []);
+
+  if (!mounted) return null;
 
   const activeManifest = manifests.find((m) => m.status === 'EN_ROUTE') || manifests[0];
 
