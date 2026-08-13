@@ -6,6 +6,14 @@ import { daysAgo } from './utils';
 
 export type Role = 'WARGA' | 'RT_RW' | 'ADMIN_DLH' | 'PENGANGKUT' | 'PENGAWAS_TPA';
 
+export const ROLE_LABEL: Record<Role, string> = {
+  WARGA: 'Warga',
+  RT_RW: 'Ketua RT',
+  ADMIN_DLH: 'Dinas LH',
+  PENGANGKUT: 'Petugas Pengangkut',
+  PENGAWAS_TPA: 'Pengawas TPA',
+};
+
 export type WasteType = 'ORGANIK' | 'ANORGANIK';
 export type ReportStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type SamplingStatus = 'PATUH' | 'TIDAK';
@@ -381,6 +389,42 @@ function seedNotifications(): AppNotification[] {
       user_id: 'w1',
       title: 'Laporan Terverifikasi',
       message: 'Laporan pemilahan organik Anda diverifikasi RT. +10 poin.',
+      type: 'success',
+      read: true,
+      created_at: daysAgo(1),
+    },
+    {
+      id: 'N-004',
+      user_id: 'p1',
+      title: 'Jadwal Rute Penjemputan RT 01',
+      message: 'Armada TRUK-04 dijadwalkan menjemput sampah Organik di RT 01 Kel. Mangkura.',
+      type: 'info',
+      read: false,
+      created_at: daysAgo(0),
+    },
+    {
+      id: 'N-005',
+      user_id: 'p1',
+      title: 'Manifest Manifesto Terverifikasi TPA',
+      message: 'Manifest MAN-002 (1,200 Kg) disetujui Pengawas TPA Tamangapa.',
+      type: 'success',
+      read: true,
+      created_at: daysAgo(1),
+    },
+    {
+      id: 'N-006',
+      user_id: 'tpa1',
+      title: 'Armada TRUK-04 Tiba di Gerbang',
+      message: 'Armada TRUK-04 membawa 850 Kg Organik siap diaudit di pintu gerbang TPA.',
+      type: 'info',
+      read: false,
+      created_at: daysAgo(0),
+    },
+    {
+      id: 'N-007',
+      user_id: 'tpa1',
+      title: 'Audit Timbangan Tonase Selesai',
+      message: 'Rekapitulasi tonase masuk TPA Tamangapa hari ini tercatat 2,050 Kg.',
       type: 'success',
       read: true,
       created_at: daysAgo(1),

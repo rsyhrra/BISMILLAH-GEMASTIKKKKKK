@@ -36,9 +36,19 @@ function NotifikasiContent() {
   const load = () => {
     if (!user) return;
     setNotifs(db.getNotifications(user.id));
-    if (user.role === 'RT_RW') setKonflik(db.getKonflikForRT(user.id));
-    else if (user.role === 'WARGA') setKonflik(db.getKonflik().filter((k) => k.citizen_id === user.id));
-    else setKonflik(db.getKonflik());
+
+    // Role-based Konflik filtering:
+    if (user.role === 'RT_RW') {
+      setKonflik(db.getKonflikForRT(user.id));
+    } else if (user.role === 'WARGA') {
+      setKonflik(db.getKonflik().filter((k) => k.citizen_id === user.id));
+    } else if (user.role === 'ADMIN_DLH') {
+      setKonflik(db.getKonflik().filter((k) => k.status === 'ESKALASI' || k.status === 'AKTIF'));
+    } else {
+      // PENGANGKUT & PENGAWAS_TPA rely on operational logs, not citizen vs RT disputes!
+      setKonflik([]);
+    }
+
     db.markAllRead(user.id);
     refreshNotif();
   };
@@ -62,13 +72,22 @@ function NotifikasiContent() {
 
   const activeKonflik = konflik.filter((k) => k.status === 'AKTIF');
 
+  const roleSubtitle =
+    user.role === 'WARGA' || user.role === 'RT_RW'
+      ? 'Anomali pemilahan & riwayat notifikasi Anda'
+      : user.role === 'ADMIN_DLH'
+      ? 'Konflik eskalasi kota & notifikasi dinas'
+      : user.role === 'PENGANGKUT'
+      ? 'Jadwal rute penjemputan, manifest QC & notifikasi armada'
+      : 'Audit tonase, gerbang TPA & notifikasi inspeksi';
+
   return (
     <div className="space-y-5 max-w-3xl">
       <div>
         <h1 className="font-lexend font-extrabold text-xl text-on-surface flex items-center gap-2">
-          <BellRing className="w-5 h-5 text-primary-700" /> Notifikasi
+          <BellRing className="w-5 h-5 text-primary-700" /> Notifikasi ({db.ROLE_LABEL[user.role]})
         </h1>
-        <p className="text-xs text-on-surface-variant mt-0.5">Konflik pemilahan & riwayat notifikasi</p>
+        <p className="text-xs text-on-surface-variant mt-0.5">{roleSubtitle}</p>
       </div>
 
       {/* KONFLIK */}
