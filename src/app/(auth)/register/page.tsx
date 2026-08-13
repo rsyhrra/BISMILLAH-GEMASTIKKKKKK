@@ -52,9 +52,9 @@ export default function RegisterPage() {
 
         <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-7 shadow-card-lg">
           {/* ROLE SELECTOR */}
-          <div className="mb-6">
-            <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2">
-              Pilih Jenis Akun
+          <div className="mb-6 space-y-2.5">
+            <label className="block text-xs font-bold text-on-surface uppercase tracking-wider">
+              Pilih Jenis Akun Pendaftaran Mandiri
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -81,6 +81,10 @@ export default function RegisterPage() {
               >
                 <House className="w-4 h-4" /> Akun RT / RW
               </button>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 text-[11px] text-slate-500 leading-tight">
+              💡 <span className="font-semibold">Catatan Kedinasan:</span> Akun untuk <span className="font-bold text-slate-700">Pengangkut Armada, Pengawas TPA, & Admin DLH</span> diterbitkan resmi oleh DLH Kota Makassar.
             </div>
           </div>
 
