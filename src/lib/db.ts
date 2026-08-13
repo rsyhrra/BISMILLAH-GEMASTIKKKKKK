@@ -449,6 +449,12 @@ function loadDB(): DemoDB {
     if (raw) {
       cache = JSON.parse(raw) as DemoDB;
       if (!cache.manifests) cache.manifests = seedManifests();
+      const seededUsers = seedUsers();
+      seededUsers.forEach((su) => {
+        if (!cache!.users.some((u) => u.id === su.id || u.email === su.email)) {
+          cache!.users.push(su);
+        }
+      });
       return cache;
     }
   } catch {
@@ -511,6 +517,8 @@ export function logout() {
 export function homePath(role: Role): string {
   if (role === 'RT_RW') return '/rt/sampling';
   if (role === 'ADMIN_DLH') return '/dlh/overview';
+  if (role === 'PENGANGKUT') return '/pengangkut/rute';
+  if (role === 'PENGAWAS_TPA') return '/tpa/scan';
   return '/warga/dashboard';
 }
 
