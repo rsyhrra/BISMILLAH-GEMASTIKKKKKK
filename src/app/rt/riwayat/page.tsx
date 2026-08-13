@@ -93,11 +93,11 @@ function RiwayatContent() {
                   </p>
                   <div className="flex items-center gap-2 pt-1 flex-wrap">
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      🟢 {approvedCount} Disetujui
+                      {approvedCount} Disetujui
                     </span>
                     {rejectedCount > 0 && (
                       <span className="text-[10px] bg-rose-100 text-rose-800 font-extrabold px-2.5 py-0.5 rounded-full border border-rose-200">
-                        🔴 {rejectedCount} Ditolak
+                        {rejectedCount} Ditolak
                       </span>
                     )}
                   </div>
@@ -173,23 +173,23 @@ function RiwayatContent() {
                     <div className="shrink-0 flex items-center pt-1 sm:pt-0">
                       {rep.audit_source === 'RT_SOLVED' ? (
                         <span className="text-[11px] bg-amber-100 text-amber-900 font-extrabold px-3 py-1 rounded-full border border-amber-200">
-                          🟢 Disetujui RT (Selesai RT) (+5 Pts)
+                          Disetujui RT (Selesai RT) (+5 Pts)
                         </span>
                       ) : rep.audit_source === 'DLH_WARGA_VALID' ? (
                         <span className="text-[11px] bg-indigo-100 text-indigo-900 font-extrabold px-3 py-1 rounded-full border border-indigo-200">
-                          🏛️ Disetujui DLH (Warga Valid) (+10 Pts)
+                          Disetujui DLH (Warga Valid) (+10 Pts)
                         </span>
                       ) : rep.audit_source === 'DLH_RT_VALID' ? (
                         <span className="text-[11px] bg-rose-100 text-rose-900 font-extrabold px-3 py-1 rounded-full border border-rose-200">
-                          🔴 Ditolak DLH (RT Valid)
+                          Ditolak DLH (RT Valid)
                         </span>
                       ) : rep.status === 'APPROVED' ? (
                         <span className="text-[11px] bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-full border border-emerald-200">
-                          🟢 Disetujui RT (+5 Pts)
+                          Disetujui RT (+5 Pts)
                         </span>
                       ) : (
                         <span className="text-[11px] bg-rose-100 text-rose-800 font-extrabold px-3 py-1 rounded-full border border-rose-200">
-                          🔴 Ditolak DLH (Sampling RT Valid)
+                          Ditolak DLH (Sampling RT Valid)
                         </span>
                       )}
                     </div>

@@ -141,7 +141,7 @@ function NotifikasiContent() {
 
                 {isEskalasi && !resolved && (
                   <p className="mt-3 text-[11px] text-indigo-900 bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2.5 leading-relaxed font-medium">
-                    🏛️ Kasus dinaikkan ke DLH. Tindak lanjut & putusan final dilakukan di menu <strong>Intervensi & Arbitrasi DLH</strong>.
+                    Kasus dinaikkan ke DLH. Tindak lanjut & putusan final dilakukan di menu <strong>Intervensi & Arbitrasi DLH</strong>.
                   </p>
                 )}
 
@@ -159,13 +159,13 @@ function NotifikasiContent() {
 
                 {!isEskalasi && !resolved && user.role === 'WARGA' && (
                   <p className="mt-3 text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
-                    ⏳ Menunggu tindak lanjut / klarifikasi dari Ketua RT.
+                    Menunggu tindak lanjut / klarifikasi dari Ketua RT.
                   </p>
                 )}
 
                 {resolved && (
                   <p className="mt-3 text-[11px] text-on-surface-variant bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 leading-relaxed">
-                    ✅ {k.catatan ? k.catatan.replace(/ditolak RT/gi, 'terdeteksi anomali pemilahan saat sampling RT') : 'Sengketa telah diselesaikan.'}
+                    {k.catatan ? k.catatan.replace(/ditolak RT/gi, 'terdeteksi anomali pemilahan saat sampling RT') : 'Sengketa telah diselesaikan.'}
                   </p>
                 )}
               </div>
