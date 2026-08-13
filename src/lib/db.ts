@@ -857,16 +857,27 @@ export function resolveKonflik(id: string, catatan: string): Konflik | null {
   const konflik = db.konflik.find((k) => k.id === id);
   if (!konflik) return null;
   konflik.status = 'SELESAI';
-  konflik.catatan = catatan || 'Klarifikasi RT: Sengketa diselesaikan di tingkat RT (Penolakan sah).';
+  konflik.catatan = catatan || 'Klarifikasi RT: Sengketa diselesaikan & laporan warga diterima (Patuh).';
 
   const citizen = db.users.find((u) => u.id === konflik.citizen_id);
+
+  // When RT resolves locally, RT approves/accepts the citizen report & awards points!
+  if (citizen) {
+    citizen.siri_points += 5;
+    const rejectedReport = db.reports.find(
+      (r) => r.citizen_id === konflik.citizen_id && r.status === 'REJECTED'
+    );
+    if (rejectedReport) {
+      rejectedReport.status = 'APPROVED';
+    }
+  }
 
   db.notifications.push({
     id: uid('N'),
     user_id: konflik.citizen_id,
-    title: 'Klarifikasi RT Selesai',
-    message: `Tindak lanjut Ketua RT: ${catatan || 'Hasil penolakan laporan dinyatakan sah setelah koordinasi RT.'}`,
-    type: 'info',
+    title: '🎉 Sengketa Diselesaikan RT',
+    message: `Tindak lanjut Ketua RT: ${catatan || 'Laporan Anda disetujui & dinyatakan Patuh (+5 Poin).' }`,
+    type: 'success',
     read: false,
     created_at: new Date().toISOString(),
   });
