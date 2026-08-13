@@ -8,8 +8,8 @@ import StatusBadge from '@/components/status-badge';
 import { useApp } from '@/lib/app-context';
 import { useToast } from '@/components/toast';
 import * as db from '@/lib/db';
-import { cn, timeAgo } from '@/lib/utils';
-import { RefreshCw, MapPin, Check, X, Camera, Loader2 } from 'lucide-react';
+import { cn, timeAgo, formatDateTime } from '@/lib/utils';
+import { RefreshCw, MapPin, Check, X, Camera, Loader2, Eye, Leaf, Trash2, Clock } from 'lucide-react';
 
 export default function RtSamplingPage() {
   return (
@@ -28,6 +28,7 @@ function SamplingContent() {
   const [samplingByCitizen, setSamplingByCitizen] = useState<Record<string, db.SamplingRecord | null>>({});
 
   const [active, setActive] = useState<{ citizen: db.DemoUser; status: db.SamplingStatus } | null>(null);
+  const [viewingReport, setViewingReport] = useState<{ citizen: db.DemoUser; report: db.Report } | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -193,14 +194,17 @@ function SamplingContent() {
 
               {/* BUKTI FOTO LAPORAN MANDIRI WARGA */}
               {lastReport ? (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                <div
+                  onClick={() => setViewingReport({ citizen: w, report: lastReport })}
+                  className="bg-slate-50 border border-slate-200 hover:border-primary-400 hover:bg-primary-50/40 transition rounded-xl p-3 flex items-center justify-between gap-3 cursor-pointer group shadow-sm"
+                >
                   <div className="flex items-center gap-3 min-w-0">
                     {lastReport.photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={lastReport.photo}
                         alt="Foto Laporan Warga"
-                        className="w-12 h-12 rounded-lg object-cover border border-slate-300 shrink-0"
+                        className="w-12 h-12 rounded-lg object-cover border border-slate-300 shrink-0 group-hover:scale-105 transition"
                       />
                     ) : (
                       <div className="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-lg shrink-0">
@@ -216,15 +220,20 @@ function SamplingContent() {
                           </span>
                         )}
                       </p>
-                      <p className="text-[10px] text-on-surface-variant">
-                        Dikirim: {timeAgo(lastReport.created_at)}
+                      <p className="text-[10px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+                        <Clock className="w-3 h-3 text-slate-400" /> Dikirim: {timeAgo(lastReport.created_at)}
                       </p>
                     </div>
                   </div>
+
+                  <button className="bg-white border border-slate-200 group-hover:border-primary-300 text-primary-700 text-[11px] font-extrabold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 shadow-sm transition">
+                    <Eye className="w-3.5 h-3.5" /> Lihat Foto
+                  </button>
                 </div>
               ) : (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[11px] text-on-surface-variant font-medium">
-                  Belum mengirim laporan pemilahan mandiri
+                <div className="bg-slate-50/80 border border-dashed border-slate-200 rounded-xl px-3 py-2.5 text-[11px] text-slate-500 font-medium flex items-center justify-between">
+                  <span>Belum ada laporan sampah yang masuk</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Sidak RT diperlukan</span>
                 </div>
               )}
 
@@ -361,6 +370,101 @@ function SamplingContent() {
             Hasil sampling: {active?.status === 'PATUH' ? 'PATUH (+5 poin warga)' : 'TIDAK PATUH'}
           </div>
         </div>
+      </Modal>
+
+      {/* MODAL DETAIL PRATINJAU LAPORAN WARGA */}
+      <Modal
+        open={!!viewingReport}
+        onClose={() => setViewingReport(null)}
+        title="Detail Foto & Pemilahan Warga"
+        subtitle={
+          viewingReport
+            ? `${viewingReport.citizen.full_name} (${viewingReport.citizen.email})`
+            : undefined
+        }
+        size="md"
+        footer={
+          viewingReport ? (
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={() => setViewingReport(null)}
+                className="bg-slate-100 hover:bg-slate-200 text-on-surface-variant text-xs font-bold px-4 py-3 rounded-xl transition"
+              >
+                Tutup
+              </button>
+              <button
+                onClick={() => {
+                  const target = viewingReport.citizen;
+                  setViewingReport(null);
+                  handlePick(target, 'PATUH');
+                }}
+                className="flex-1 bg-primary-600 hover:bg-primary-500 text-white text-xs font-extrabold py-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md"
+              >
+                <Check className="w-4 h-4" /> Verifikasi PATUH (+5 Pts)
+              </button>
+              <button
+                onClick={() => {
+                  const target = viewingReport.citizen;
+                  setViewingReport(null);
+                  handlePick(target, 'TIDAK');
+                }}
+                className="bg-red-600 hover:bg-red-500 text-white text-xs font-extrabold px-4 py-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md"
+              >
+                <X className="w-4 h-4" /> TIDAK PATUH
+              </button>
+            </div>
+          ) : undefined
+        }
+      >
+        {viewingReport && (
+          <div className="space-y-4">
+            {/* PRATINJAU FOTO UTAMA */}
+            {viewingReport.report.photo ? (
+              <div className="relative rounded-2xl overflow-hidden border-2 border-slate-200 aspect-[4/3] bg-slate-900 flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={viewingReport.report.photo}
+                  alt="Bukti Foto Sampah Terpilah Warga"
+                  className="w-full h-full object-contain"
+                />
+                <span className="absolute top-2 left-2 bg-emerald-700/90 backdrop-blur-md text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
+                  <Camera className="w-3 h-3" /> Foto Asli Aplikasi PILAH.ki
+                </span>
+              </div>
+            ) : (
+              <div className="bg-slate-100 rounded-2xl p-8 text-center text-slate-500 text-xs font-medium">
+                Tidak ada foto terlampir pada laporan ini
+              </div>
+            )}
+
+            {/* DETAIL INFORMASI */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2.5 text-xs text-on-surface">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200/80">
+                <span className="text-on-surface-variant font-medium">Warga Pelapor</span>
+                <span className="font-extrabold text-on-surface">{viewingReport.citizen.full_name}</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200/80">
+                <span className="text-on-surface-variant font-medium">Jenis Sampah Terpilah</span>
+                <span className="font-extrabold text-primary-700 flex items-center gap-1.5">
+                  {viewingReport.report.type === 'ORGANIK' ? <Leaf className="w-4 h-4 text-emerald-600" /> : <Trash2 className="w-4 h-4 text-amber-600" />}
+                  {viewingReport.report.type === 'ORGANIK' ? 'Organik (Sisa Makanan/Daun)' : 'Anorganik (Plastik/Kemasan)'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200/80">
+                <span className="text-on-surface-variant font-medium">Waktu Pengiriman</span>
+                <span className="font-bold text-slate-700">{formatDateTime(viewingReport.report.created_at)} ({timeAgo(viewingReport.report.created_at)})</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-on-surface-variant font-medium">Status Laporan</span>
+                <span className={`font-extrabold px-2.5 py-0.5 rounded-full text-[10px] ${
+                  viewingReport.report.status === 'PENDING' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                }`}>
+                  {viewingReport.report.status === 'PENDING' ? '🟡 Menunggu Verifikasi RT' : '🟢 Disetujui RT'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
