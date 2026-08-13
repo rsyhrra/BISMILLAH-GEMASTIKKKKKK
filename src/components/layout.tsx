@@ -17,6 +17,10 @@ import {
   ClipboardList,
   Bell,
   LogOut,
+  Truck,
+  QrCode,
+  ScanLine,
+  Scale,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -41,12 +45,22 @@ const NAV_BY_ROLE: Record<Role, NavItem[]> = {
     { href: '/dlh/peta', label: 'Peta Risiko', icon: Map },
     { href: '/dlh/intervensi', label: 'Intervensi', icon: ClipboardList },
   ],
+  PENGANGKUT: [
+    { href: '/pengangkut/rute', label: 'Rute RT', icon: Truck },
+    { href: '/pengangkut/manifesto', label: 'Manifesto', icon: QrCode },
+  ],
+  PENGAWAS_TPA: [
+    { href: '/tpa/scan', label: 'Inspeksi TPA', icon: ScanLine },
+    { href: '/tpa/riwayat', label: 'Audit Tonase', icon: Scale },
+  ],
 };
 
 const ROLE_LABEL: Record<Role, string> = {
   WARGA: 'Warga',
   RT_RW: 'Ketua RT',
   ADMIN_DLH: 'Admin DLH',
+  PENGANGKUT: 'Petugas Pengangkut',
+  PENGAWAS_TPA: 'Pengawas TPA',
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

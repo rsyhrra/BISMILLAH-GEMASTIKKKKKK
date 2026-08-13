@@ -4,7 +4,7 @@ import { daysAgo } from './utils';
 // TYPES
 // ============================================================
 
-export type Role = 'WARGA' | 'RT_RW' | 'ADMIN_DLH';
+export type Role = 'WARGA' | 'RT_RW' | 'ADMIN_DLH' | 'PENGANGKUT' | 'PENGAWAS_TPA';
 
 export type WasteType = 'ORGANIK' | 'ANORGANIK';
 export type ReportStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -13,6 +13,21 @@ export type KonflikStatus = 'AKTIF' | 'ESKALASI' | 'SELESAI';
 export type IntervensiStatus = 'BELUM' | 'TENGAH' | 'SELESAI';
 export type RiskLevel = 'HIGH' | 'MEDIUM' | 'LOW';
 export type NotifType = 'info' | 'konflik' | 'success';
+
+export interface PickupManifest {
+  id: string;
+  truck_code: string;
+  driver_name: string;
+  kelurahan: string;
+  rt: string;
+  waste_type: WasteType;
+  status: 'EN_ROUTE' | 'APPROVED_TPA' | 'REJECTED_TPA';
+  qc_status: 'CLEAN' | 'MIXED';
+  qc_photo: string | null;
+  tonnage_kg: number;
+  tpa_notes?: string;
+  created_at: string;
+}
 
 export interface DemoUser {
   id: string;
@@ -113,6 +128,7 @@ interface DemoDB {
   konflik: Konflik[];
   intervensi: Intervensi[];
   notifications: AppNotification[];
+  manifests: PickupManifest[];
 }
 
 // ============================================================
@@ -208,6 +224,34 @@ function seedUsers(): DemoUser[] {
     r('rt3', 'rt3@test.com', 'Pak Darmawan', 'Sejahtera'),
     r('rt4', 'rt4@test.com', 'Ibu Fitriani', 'Hijau'),
     r('rt5', 'rt5@test.com', 'Pak Yohanis', 'Makmur'),
+    {
+      id: 'p1',
+      email: 'driver@test.com',
+      password: 'demo123',
+      full_name: 'Budi Transport (Sopir Truk #04)',
+      nik: '7371018800000001',
+      role: 'PENGANGKUT',
+      kecamatan: 'Manggala',
+      kelurahan: 'Merdeka',
+      rt: '01',
+      rw: '02',
+      rt_code: 'TRUK-04',
+      siri_points: 0,
+    },
+    {
+      id: 't1',
+      email: 'tpa@test.com',
+      password: 'demo123',
+      full_name: 'Pak Slamet (Pengawas TPA Tamangapa)',
+      nik: '7371019900000002',
+      role: 'PENGAWAS_TPA',
+      kecamatan: 'Manggala',
+      kelurahan: 'TPA Tamangapa',
+      rt: '-',
+      rw: '-',
+      rt_code: 'TPA-01',
+      siri_points: 0,
+    },
     w('w1', 'warga1@test.com', 'Andi Pratama', '7371012903940001', 'Merdeka', '01', '02', 'MKS-MRD-001', 25),
     w('w2', 'warga2@test.com', 'Siti Nurhaliza', '7371015007870002', 'Merdeka', '01', '02', 'MKS-MRD-001', 10),
     w('w3', 'warga3@test.com', 'Budi Santoso', '7371011208800003', 'Merdeka', '01', '02', 'MKS-MRD-001', 0),
@@ -333,6 +377,52 @@ function seedNotifications(): AppNotification[] {
   ];
 }
 
+function seedManifests(): PickupManifest[] {
+  return [
+    {
+      id: 'MAN-001',
+      truck_code: 'TRUK-04',
+      driver_name: 'Budi Transport',
+      kelurahan: 'Merdeka',
+      rt: '01',
+      waste_type: 'ORGANIK',
+      status: 'EN_ROUTE',
+      qc_status: 'CLEAN',
+      qc_photo: null,
+      tonnage_kg: 850,
+      created_at: daysAgo(0),
+    },
+    {
+      id: 'MAN-002',
+      truck_code: 'TRUK-02',
+      driver_name: 'Pak Ruslan',
+      kelurahan: 'Bahari',
+      rt: '02',
+      waste_type: 'ANORGANIK',
+      status: 'APPROVED_TPA',
+      qc_status: 'CLEAN',
+      qc_photo: null,
+      tonnage_kg: 1200,
+      tpa_notes: 'Muatan terpilah bersih, lolos inspeksi TPA.',
+      created_at: daysAgo(1),
+    },
+    {
+      id: 'MAN-003',
+      truck_code: 'TRUK-05',
+      driver_name: 'Pak Hasan',
+      kelurahan: 'Sejahtera',
+      rt: '01',
+      waste_type: 'ORGANIK',
+      status: 'REJECTED_TPA',
+      qc_status: 'MIXED',
+      qc_photo: null,
+      tonnage_kg: 950,
+      tpa_notes: 'Ditolak: Sampah organik terbukti terkontaminasi plastik 30%.',
+      created_at: daysAgo(2),
+    },
+  ];
+}
+
 function buildSeed(): DemoDB {
   return {
     users: seedUsers(),
@@ -341,6 +431,7 @@ function buildSeed(): DemoDB {
     konflik: seedKonflik(),
     intervensi: seedIntervensi(),
     notifications: seedNotifications(),
+    manifests: seedManifests(),
   };
 }
 
@@ -357,6 +448,7 @@ function loadDB(): DemoDB {
     const raw = window.localStorage.getItem(DEMO_KEY);
     if (raw) {
       cache = JSON.parse(raw) as DemoDB;
+      if (!cache.manifests) cache.manifests = seedManifests();
       return cache;
     }
   } catch {
@@ -767,4 +859,74 @@ export function markAllRead(userId: string) {
     if (n.user_id === userId) n.read = true;
   });
   saveDB();
+}
+
+// ============================================================
+// MANIFESTS (PETUGAS PENGANGKUT & PENGAWAS TPA)
+// ============================================================
+
+export function getManifests(): PickupManifest[] {
+  const db = loadDB();
+  if (!db.manifests) db.manifests = [];
+  return db.manifests.slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function createManifest(
+  driverName: string,
+  kelurahan: string,
+  rt: string,
+  wasteType: WasteType,
+  qcStatus: 'CLEAN' | 'MIXED',
+  qcPhoto: string | null,
+  tonnageKg: number
+): PickupManifest {
+  const db = loadDB();
+  if (!db.manifests) db.manifests = [];
+  const manifest: PickupManifest = {
+    id: uid('MAN'),
+    truck_code: 'TRUK-04',
+    driver_name: driverName,
+    kelurahan,
+    rt,
+    waste_type: wasteType,
+    status: 'EN_ROUTE',
+    qc_status: qcStatus,
+    qc_photo: qcPhoto,
+    tonnage_kg: tonnageKg,
+    created_at: new Date().toISOString(),
+  };
+  db.manifests.unshift(manifest);
+  saveDB();
+  return manifest;
+}
+
+export function inspectManifestTPA(
+  id: string,
+  approved: boolean,
+  tonnageKg: number,
+  tpaNotes: string
+): PickupManifest | null {
+  const db = loadDB();
+  if (!db.manifests) db.manifests = [];
+  const manifest = db.manifests.find((m) => m.id === id);
+  if (!manifest) return null;
+
+  manifest.status = approved ? 'APPROVED_TPA' : 'REJECTED_TPA';
+  manifest.tonnage_kg = tonnageKg || manifest.tonnage_kg;
+  manifest.tpa_notes = tpaNotes;
+
+  if (!approved) {
+    db.notifications.push({
+      id: uid('N'),
+      user_id: 'dlh',
+      title: '🚨 Truk Ditolak di TPA Tamangapa',
+      message: `Truk ${manifest.truck_code} (${manifest.kelurahan} RT ${manifest.rt}) ditolak di gerbang TPA: ${tpaNotes}`,
+      type: 'konflik',
+      read: false,
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  saveDB();
+  return manifest;
 }

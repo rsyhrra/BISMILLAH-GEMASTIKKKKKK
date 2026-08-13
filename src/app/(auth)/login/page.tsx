@@ -6,18 +6,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useApp, homePath } from '@/lib/app-context';
 import type { Role } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { User, House, Building2, Lock, Eye, EyeOff, ShieldCheck, Loader2 } from 'lucide-react';
+import { User, House, Building2, Lock, Eye, EyeOff, ShieldCheck, Loader2, Truck, Scale } from 'lucide-react';
 
 const ROLE_OPTIONS: { role: Role; label: string; desc: string; icon: React.ReactNode }[] = [
-  { role: 'WARGA', label: 'Warga', desc: 'Lapor sampah & poin', icon: <User className="w-5 h-5" /> },
-  { role: 'RT_RW', label: 'Ketua RT', desc: 'Pendataan & anomali', icon: <House className="w-5 h-5" /> },
-  { role: 'ADMIN_DLH', label: 'Admin DLH', desc: 'Dashboard & intervensi', icon: <Building2 className="w-5 h-5" /> },
+  { role: 'WARGA', label: 'Warga', desc: 'Lapor & poin', icon: <User className="w-4 h-4" /> },
+  { role: 'RT_RW', label: 'Ketua RT', desc: 'Sampling & anomali', icon: <House className="w-4 h-4" /> },
+  { role: 'PENGANGKUT', label: 'Pengangkut', desc: 'QC Rute & Manifesto', icon: <Truck className="w-4 h-4" /> },
+  { role: 'PENGAWAS_TPA', label: 'Pengawas TPA', desc: 'Scan & Gate TPA', icon: <Scale className="w-4 h-4" /> },
+  { role: 'ADMIN_DLH', label: 'Admin DLH', desc: 'Dashboard & intervensi', icon: <Building2 className="w-4 h-4" /> },
 ];
 
 const DEMO_LOGIN: { role: Role; email: string; label: string; color: string }[] = [
   { role: 'WARGA', email: 'warga1@test.com', label: 'Warga', color: 'bg-emerald-500' },
-  { role: 'RT_RW', email: 'rt1@test.com', label: 'RT', color: 'bg-blue-500' },
-  { role: 'ADMIN_DLH', email: 'dlh@test.com', label: 'DLH', color: 'bg-purple-600' },
+  { role: 'RT_RW', email: 'rt1@test.com', label: 'Ketua RT', color: 'bg-blue-500' },
+  { role: 'PENGANGKUT', email: 'driver@test.com', label: 'Pengangkut', color: 'bg-amber-500' },
+  { role: 'PENGAWAS_TPA', email: 'tpa@test.com', label: 'Pengawas TPA', color: 'bg-indigo-500' },
+  { role: 'ADMIN_DLH', email: 'dlh@test.com', label: 'Admin DLH', color: 'bg-purple-600' },
 ];
 
 export default function LoginPage() {
@@ -92,7 +96,7 @@ function LoginContent() {
             <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
               Masuk sebagai
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {ROLE_OPTIONS.map((opt) => (
                 <button
                   key={opt.role}
@@ -193,7 +197,7 @@ function LoginContent() {
               <ShieldCheck className="w-4 h-4 text-accent-600 shrink-0" />
               Mode demo aktif — klik peran untuk login cepat
             </div>
-            <div className="grid grid-cols-3 gap-2 text-xs font-bold">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
               {DEMO_LOGIN.map((d) => (
                 <button
                   key={d.role}
