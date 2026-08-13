@@ -163,6 +163,17 @@ const BASE_RESIDU: Record<string, number> = {
   Makmur: 110,
 };
 
+export function getRtCode(kelurahan: string): string {
+  const map: Record<string, string> = {
+    Merdeka: 'MKS-MRD-001',
+    Bahari: 'MKS-BHR-001',
+    Sejahtera: 'MKS-SJH-001',
+    Hijau: 'MKS-HJU-001',
+    Makmur: 'MKS-MKM-001',
+  };
+  return map[kelurahan] || `MKS-${kelurahan.substring(0, 3).toUpperCase()}-001`;
+}
+
 function seedUsers(): DemoUser[] {
   const w = (
     id: string,
@@ -200,7 +211,7 @@ function seedUsers(): DemoUser[] {
     kelurahan,
     rt: '01',
     rw: '02',
-    rt_code: `MKS-${kelurahan.substring(0, 3).toUpperCase()}-001`,
+    rt_code: getRtCode(kelurahan),
     siri_points: 0,
   });
 
@@ -451,8 +462,11 @@ function loadDB(): DemoDB {
       if (!cache.manifests) cache.manifests = seedManifests();
       const seededUsers = seedUsers();
       seededUsers.forEach((su) => {
-        if (!cache!.users.some((u) => u.id === su.id || u.email === su.email)) {
+        const found = cache!.users.find((u) => u.id === su.id || u.email === su.email);
+        if (!found) {
           cache!.users.push(su);
+        } else {
+          found.rt_code = su.rt_code;
         }
       });
       return cache;
