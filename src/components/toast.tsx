@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, AlertTriangle, Info, XCircle } from 'lucide-react';
 
-type ToastType = 'success' | 'error' | 'info' | 'konflik';
+type ToastType = 'success' | 'error' | 'info' | 'konflik' | 'warning';
 
 interface ToastItem {
   id: number;
@@ -24,6 +24,7 @@ const STYLES: Record<ToastType, { icon: React.ReactNode; accent: string; iconCol
   error: { icon: <XCircle className="w-5 h-5" />, accent: 'border-l-red-600', iconColor: 'text-red-600' },
   info: { icon: <Info className="w-5 h-5" />, accent: 'border-l-sky-600', iconColor: 'text-sky-600' },
   konflik: { icon: <AlertTriangle className="w-5 h-5" />, accent: 'border-l-accent-600', iconColor: 'text-accent-600' },
+  warning: { icon: <AlertTriangle className="w-5 h-5" />, accent: 'border-l-amber-600', iconColor: 'text-amber-600' },
 };
 
 let nextId = 1;

@@ -11,6 +11,8 @@ import ReportDetailModal from '@/components/report-detail-modal';
 import { Star, Camera, ChevronRight, Leaf, Trash2 } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
 
+import { useToast } from '@/components/toast';
+
 export default function WargaDashboardPage() {
   return (
     <PageShell allowed={['WARGA']}>
@@ -21,6 +23,7 @@ export default function WargaDashboardPage() {
 
 function DashboardContent() {
   const { user } = useApp();
+  const { showToast } = useToast();
   const [reports, setReports] = useState<db.Report[]>([]);
   const [selected, setSelected] = useState<db.Report | null>(null);
 
@@ -46,6 +49,12 @@ function DashboardContent() {
     todayStatus === 'PATUH'
       ? 'Terima kasih! Laporan hari ini sudah diterima.'
       : 'Kirim laporan pemilahan hari ini untuk menjaga kepatuhan dan menambah poin.';
+
+  const handleCancelReport = (reportId: string) => {
+    db.deleteReport(reportId);
+    if (user) setReports(db.getReports(user.id));
+    showToast('info', 'Laporan Dibatalkan', 'Laporan pemilahan berhasil dihapus.');
+  };
 
   return (
     <div className="space-y-5">
@@ -177,7 +186,7 @@ function DashboardContent() {
         ))}
       </section>
 
-      <ReportDetailModal report={selected} onClose={() => setSelected(null)} />
+      <ReportDetailModal report={selected} onClose={() => setSelected(null)} onCancelReport={handleCancelReport} />
     </div>
   );
 }

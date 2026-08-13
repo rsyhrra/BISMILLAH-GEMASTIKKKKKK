@@ -29,9 +29,11 @@ const STATUS_META: Record<Report['status'], { variant: 'patuh' | 'tidak' | 'teng
 export default function ReportDetailModal({
   report,
   onClose,
+  onCancelReport,
 }: {
   report: Report | null;
   onClose: () => void;
+  onCancelReport?: (reportId: string) => void;
 }) {
   if (!report) return null;
   const meta = STATUS_META[report.status];
@@ -72,6 +74,18 @@ export default function ReportDetailModal({
           {report.status === 'PENDING' && 'Laporan menunggu pendataan/sampling oleh pengurus RT di wilayah Anda.'}
           {report.status === 'REJECTED' && 'Laporan Anda ditolak karena hasil sampling RT menemukan ketidaksesuaian.'}
         </div>
+
+        {report.status === 'PENDING' && onCancelReport && (
+          <button
+            onClick={() => {
+              onCancelReport(report.id);
+              onClose();
+            }}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <Trash2 className="w-4 h-4" /> Batalkan Laporan Ini
+          </button>
+        )}
       </div>
     </Modal>
   );

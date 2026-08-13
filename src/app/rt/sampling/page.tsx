@@ -52,6 +52,31 @@ function SamplingContent() {
     setSamplingByCitizen(sampling);
   };
 
+  const handleVerifySingleReport = (citizen: db.DemoUser, report: db.Report, approved: boolean) => {
+    if (!user) return;
+    try {
+      const res = db.verifySingleReport(report.id, approved, user.id);
+      load();
+      if (res.anomaly) {
+        showToast(
+          'warning',
+          'Anomali Ditemukan',
+          `Laporan ${report.type} ${citizen.full_name} ditolak. Ketidaksesuaian diteruskan ke DLH.`
+        );
+      } else {
+        showToast(
+          approved ? 'success' : 'info',
+          approved ? 'Laporan Disetujui' : 'Laporan Ditolak',
+          approved
+            ? `Laporan ${report.type} ${citizen.full_name} disetujui (+5 Poin).`
+            : `Laporan ${report.type} ${citizen.full_name} ditolak.`
+        );
+      }
+    } catch {
+      showToast('error', 'Gagal', 'Terjadi kesalahan sistem.');
+    }
+  };
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,44 +219,84 @@ function SamplingContent() {
 
               {/* DAFTAR LAPORAN MANDIRI WARGA */}
               {reports.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {reports.map((report) => (
                     <div
                       key={report.id}
-                      onClick={() => setViewingReport({ citizen: w, report })}
-                      className="bg-slate-50 border border-slate-200 hover:border-primary-400 hover:bg-primary-50/40 transition rounded-xl p-3 flex items-center justify-between gap-3 cursor-pointer group shadow-sm"
+                      className={cn(
+                        'bg-slate-50 border transition rounded-2xl p-3 space-y-2 shadow-sm',
+                        report.status === 'PENDING' ? 'border-amber-300 bg-amber-50/20' : 'border-slate-200'
+                      )}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {report.photo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={report.photo}
-                            alt="Foto Laporan Warga"
-                            className="w-12 h-12 rounded-lg object-cover border border-slate-300 shrink-0 group-hover:scale-105 transition"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-lg shrink-0">
-                            {report.type === 'ORGANIK' ? '🌱' : '♻️'}
+                      <div
+                        onClick={() => setViewingReport({ citizen: w, report })}
+                        className="flex items-center justify-between gap-3 cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {report.photo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={report.photo}
+                              alt="Foto Laporan Warga"
+                              className="w-12 h-12 rounded-lg object-cover border border-slate-300 shrink-0 group-hover:scale-105 transition"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-lg shrink-0">
+                              {report.type === 'ORGANIK' ? '🌱' : '♻️'}
+                            </div>
+                          )}
+                          <div className="text-xs min-w-0">
+                            <p className="font-extrabold text-on-surface flex items-center gap-1.5 flex-wrap">
+                              Sampah {report.type === 'ORGANIK' ? 'Organik (Sisa Makanan)' : 'Anorganik (Kemasan/Residu)'}
+                            </p>
+                            <p className="text-[10px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3 text-slate-400" /> Dikirim: {timeAgo(report.created_at)}
+                            </p>
                           </div>
-                        )}
-                        <div className="text-xs min-w-0">
-                          <p className="font-extrabold text-on-surface flex items-center gap-1.5 flex-wrap">
-                            Laporan Mandiri: {report.type === 'ORGANIK' ? 'Organik' : 'Anorganik'}
-                            {report.status === 'PENDING' && (
-                              <span className="text-[9px] bg-amber-100 text-amber-800 font-extrabold px-2 py-0.5 rounded-full border border-amber-200">
-                                Menunggu Verifikasi RT
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-[10px] text-on-surface-variant flex items-center gap-1 mt-0.5">
-                            <Clock className="w-3 h-3 text-slate-400" /> Dikirim: {timeAgo(report.created_at)}
-                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {report.status === 'APPROVED' && (
+                            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-1 rounded-full border border-emerald-200">
+                              🟢 Disetujui Patuh
+                            </span>
+                          )}
+                          {report.status === 'REJECTED' && (
+                            <span className="text-[10px] bg-red-100 text-red-800 font-extrabold px-2.5 py-1 rounded-full border border-red-200">
+                              🔴 Ditolak
+                            </span>
+                          )}
+                          {report.status === 'PENDING' && (
+                            <span className="text-[10px] bg-amber-100 text-amber-800 font-extrabold px-2.5 py-1 rounded-full border border-amber-200 flex items-center gap-1">
+                              <Eye className="w-3 h-3" /> Verifikasi RT
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      <button className="bg-white border border-slate-200 group-hover:border-primary-300 text-primary-700 text-[11px] font-extrabold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 shadow-sm transition">
-                        <Eye className="w-3.5 h-3.5" /> Lihat Foto
-                      </button>
+                      {/* TOMBOL AKSI INDIVIDUAL JIKA STATUS MASIH PENDING */}
+                      {report.status === 'PENDING' && (
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVerifySingleReport(w, report, true);
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold py-2 rounded-xl flex items-center justify-center gap-1 transition active:scale-[0.98] shadow-sm"
+                          >
+                            <Check className="w-4 h-4" /> Setujui Patuh (+5 Pts)
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVerifySingleReport(w, report, false);
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold py-2 rounded-xl flex items-center justify-center gap-1 transition active:scale-[0.98] shadow-sm"
+                          >
+                            <X className="w-4 h-4" /> Tolak Laporan
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -241,24 +306,6 @@ function SamplingContent() {
                   <span className="text-[10px] bg-slate-200/60 text-slate-600 font-bold px-2 py-0.5 rounded-md">
                     Belum Lapor
                   </span>
-                </div>
-              )}
-
-              {/* TOMBOL VERIFIKASI PATUH/TIDAK PATUH HANYA TAMPIL JIKA WARGA SUDAH MELAPOR */}
-              {reports.length > 0 && (
-                <div className="grid grid-cols-2 gap-2.5 pt-1">
-                  <button
-                    onClick={() => handlePick(w, 'PATUH')}
-                    className="bg-primary-600 hover:bg-primary-700 text-white text-xs font-extrabold py-3 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-[0.98] shadow-sm"
-                  >
-                    <Check className="w-4 h-4" /> Verifikasi Patuh (+5 Pts)
-                  </button>
-                  <button
-                    onClick={() => handlePick(w, 'TIDAK')}
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold py-3 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-[0.98] shadow-sm"
-                  >
-                    <X className="w-4 h-4" /> Tidak Patuh
-                  </button>
                 </div>
               )}
             </div>

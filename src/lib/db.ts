@@ -603,6 +603,21 @@ export function getSamplingForRT(rtId: string): SamplingRecord[] {
 // MUTATIONS
 // ============================================================
 
+export function hasPendingReport(citizenId: string): boolean {
+  return loadDB().reports.some((r) => r.citizen_id === citizenId && r.status === 'PENDING');
+}
+
+export function deleteReport(reportId: string): boolean {
+  const db = loadDB();
+  const idx = db.reports.findIndex((r) => r.id === reportId);
+  if (idx !== -1) {
+    db.reports.splice(idx, 1);
+    saveDB();
+    return true;
+  }
+  return false;
+}
+
 export function addReport(
   citizenId: string,
   type: WasteType,
@@ -627,6 +642,69 @@ export interface SamplingResult {
   record: SamplingRecord;
   anomaly: boolean;
   konflik?: Konflik;
+}
+
+export function verifySingleReport(
+  reportId: string,
+  approved: boolean,
+  rtId: string,
+  photo: string | null = null,
+  lat: number = -5.1476,
+  lng: number = 119.4327
+): SamplingResult {
+  const db = loadDB();
+  const report = db.reports.find((r) => r.id === reportId);
+  if (!report) throw new Error('Report not found');
+
+  const citizenId = report.citizen_id;
+  const citizen = db.users.find((u) => u.id === citizenId)!;
+
+  report.status = approved ? 'APPROVED' : 'REJECTED';
+
+  const samplingStatus: SamplingStatus = approved ? 'PATUH' : 'TIDAK';
+
+  const record: SamplingRecord = {
+    id: uid('S'),
+    rt_id: rtId,
+    citizen_id: citizenId,
+    status: samplingStatus,
+    photo: photo || report.photo,
+    lat,
+    lng,
+    created_at: new Date().toISOString(),
+  };
+  db.sampling.unshift(record);
+
+  if (approved) {
+    citizen.siri_points += 5;
+  }
+
+  let anomaly = false;
+  let konflik: Konflik | undefined;
+
+  if (!approved) {
+    const existing = db.konflik.find(
+      (k) => k.citizen_id === citizenId && k.status === 'AKTIF'
+    );
+    if (!existing) {
+      konflik = {
+        id: uid('K'),
+        rt_id: rtId,
+        citizen_id: citizenId,
+        kelurahan: citizen.kelurahan,
+        warga_status: 'PATUH',
+        rt_status: 'TIDAK',
+        status: 'AKTIF',
+        catatan: `Laporan sampah ${report.type} warga (${citizen.full_name}) ditolak RT.`,
+        created_at: new Date().toISOString(),
+      };
+      db.konflik.unshift(konflik);
+      anomaly = true;
+    }
+  }
+
+  saveDB();
+  return { record, anomaly, konflik };
 }
 
 export function addSampling(

@@ -10,6 +10,8 @@ import { Leaf, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/utils';
 
+import { useToast } from '@/components/toast';
+
 type Filter = 'all' | 'pending' | 'approved';
 
 export default function WargaRiwayatPage() {
@@ -22,6 +24,7 @@ export default function WargaRiwayatPage() {
 
 function RiwayatContent() {
   const { user } = useApp();
+  const { showToast } = useToast();
   const [reports, setReports] = useState<db.Report[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
   const [selected, setSelected] = useState<db.Report | null>(null);
@@ -31,6 +34,12 @@ function RiwayatContent() {
   }, [user]);
 
   if (!user) return null;
+
+  const handleCancelReport = (reportId: string) => {
+    db.deleteReport(reportId);
+    if (user) setReports(db.getReports(user.id));
+    showToast('info', 'Laporan Dibatalkan', 'Laporan pemilahan berhasil dihapus.');
+  };
 
   const points = db.computePoints(user.id);
   const approved = reports.filter((r) => r.status === 'APPROVED').length;
@@ -125,7 +134,7 @@ function RiwayatContent() {
         ))}
       </div>
 
-      <ReportDetailModal report={selected} onClose={() => setSelected(null)} />
+      <ReportDetailModal report={selected} onClose={() => setSelected(null)} onCancelReport={handleCancelReport} />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { useApp } from '@/lib/app-context';
 import { useToast } from '@/components/toast';
 import * as db from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { Camera, Leaf, Trash2, Send, ImagePlus, X } from 'lucide-react';
+import { Camera, Leaf, Trash2, Send, ImagePlus, X, AlertCircle } from 'lucide-react';
 
 export default function WargaLaporPage() {
   return (
@@ -27,10 +27,28 @@ function LaporContent() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [type, setType] = useState<db.WasteType | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [, setRefreshKey] = useState(0);
 
   if (!user) return null;
 
+  const pendingReport = db.getReports(user.id).find((r) => r.status === 'PENDING');
+  const hasPending = !!pendingReport;
+
+  const handleCancelPending = () => {
+    if (pendingReport) {
+      db.deleteReport(pendingReport.id);
+      showToast('info', 'Laporan Dibatalkan', 'Laporan Anda sebelumnya telah dibatalkan.');
+      setPhoto(null);
+      setType(null);
+      setRefreshKey((k) => k + 1);
+    }
+  };
+
   const handleSubmit = () => {
+    if (hasPending) {
+      showToast('warning', 'Laporan Tertunda', 'Selesaikan atau batalkan laporan sebelumnya terlebih dahulu.');
+      return;
+    }
     if (!photo || !type) {
       showToast('info', 'Lengkapi dulu', 'Ambil foto dan pilih jenis sampah terlebih dahulu.');
       return;
@@ -50,6 +68,27 @@ function LaporContent() {
           Foto sampah terpilah lalu tentukan jenisnya. Setiap laporan bernilai <strong className="text-primary-700">+10 Poin</strong>.
         </p>
       </div>
+
+      {/* ALERT LAPORAN PENDING */}
+      {hasPending && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-4 space-y-3 shadow-sm">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h3 className="font-extrabold text-xs text-amber-900">Laporan Sebelumnya Sedang Diverifikasi RT</h3>
+              <p className="text-[11px] text-amber-800 leading-relaxed">
+                Anda memiliki 1 laporan (<strong>{pendingReport.type === 'ORGANIK' ? 'Organik' : 'Anorganik'}</strong>) yang belum diverifikasi oleh Ketua RT. Harap tunggu hingga verifikasi selesai sebelum membuat laporan baru, atau Anda dapat membatalkan laporan tersebut di bawah ini.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleCancelPending}
+            className="w-full bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-1.5"
+          >
+            <Trash2 className="w-4 h-4" /> Batalkan Laporan Ini Agar Bisa Melapor Ulang
+          </button>
+        </div>
+      )}
 
       {/* STEP 1: FOTO */}
       <section className="bg-white rounded-3xl border border-slate-200/80 shadow-card p-4 space-y-3">
