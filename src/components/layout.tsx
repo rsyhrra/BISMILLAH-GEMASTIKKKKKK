@@ -163,7 +163,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* MOBILE BOTTOM NAV */}
       <nav className="lg:hidden fixed bottom-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-3 pb-safe shadow-[0_-4px_20px_rgba(15,23,42,0.08)]">
-        <div className="max-w-md mx-auto grid grid-cols-4">
+        <div
+          className="max-w-md mx-auto grid gap-1 items-center"
+          style={{ gridTemplateColumns: `repeat(${navWithNotif.length}, minmax(0, 1fr))` }}
+        >
           {navWithNotif.map((item) => {
             const active = pathname === item.href;
             const Icon = item.icon;

@@ -9,7 +9,7 @@ export type Role = 'WARGA' | 'RT_RW' | 'ADMIN_DLH';
 export type WasteType = 'ORGANIK' | 'ANORGANIK';
 export type ReportStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export type SamplingStatus = 'PATUH' | 'TIDAK';
-export type KonflikStatus = 'AKTIF' | 'SELESAI';
+export type KonflikStatus = 'AKTIF' | 'ESKALASI' | 'SELESAI';
 export type IntervensiStatus = 'BELUM' | 'TENGAH' | 'SELESAI';
 export type RiskLevel = 'HIGH' | 'MEDIUM' | 'LOW';
 export type NotifType = 'info' | 'konflik' | 'success';
@@ -622,6 +622,44 @@ export function resolveKonflik(id: string, catatan: string): Konflik | null {
   if (!konflik) return null;
   konflik.status = 'SELESAI';
   konflik.catatan = catatan || konflik.catatan;
+  saveDB();
+  return konflik;
+}
+
+export function eskalasiKonflik(id: string, catatan: string): Konflik | null {
+  const db = loadDB();
+  const konflik = db.konflik.find((k) => k.id === id);
+  if (!konflik) return null;
+  konflik.status = 'ESKALASI';
+  konflik.catatan = catatan || 'Sengketa dinaikkan ke DLH Kota Makassar untuk penanganan resmi.';
+  
+  // Notifikasi ke warga
+  db.notifications.push({
+    id: uid('N'),
+    user_id: konflik.citizen_id,
+    title: 'Anomali Dinaikkan ke DLH',
+    message: 'Laporan sengketa pemilahan Anda telah dilimpahkan ke Dinas Lingkungan Hidup.',
+    type: 'konflik',
+    read: false,
+    created_at: new Date().toISOString(),
+  });
+
+  saveDB();
+  return konflik;
+}
+
+export function resolveKonflikDLH(id: string, decision: 'WARGA_VALID' | 'RT_VALID', catatan: string): Konflik | null {
+  const db = loadDB();
+  const konflik = db.konflik.find((k) => k.id === id);
+  if (!konflik) return null;
+  konflik.status = 'SELESAI';
+  konflik.catatan = `Putusan Final DLH [${decision === 'WARGA_VALID' ? 'Laporan Warga Valid' : 'Sampling RT Valid'}]: ${catatan}`;
+
+  const citizen = db.users.find((u) => u.id === konflik.citizen_id);
+  if (citizen && decision === 'WARGA_VALID') {
+    citizen.siri_points += 10;
+  }
+
   saveDB();
   return konflik;
 }

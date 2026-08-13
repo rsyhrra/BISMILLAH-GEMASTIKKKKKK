@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { Check, X, Minus, AlertTriangle, CheckCircle2, Clock3 } from 'lucide-react';
 
-type Variant = 'patuh' | 'tidak' | 'belum' | 'anomali' | 'selesai' | 'tengah';
+type Variant = 'patuh' | 'tidak' | 'belum' | 'anomali' | 'selesai' | 'tengah' | 'eskalasi';
 
 const CONFIG: Record<
   Variant,
@@ -38,6 +38,11 @@ const CONFIG: Record<
     label: 'Sedang Berjalan',
     cls: 'bg-accent-50 text-accent-700 border-accent-200',
     icon: <Clock3 className="w-3 h-3" />,
+  },
+  eskalasi: {
+    label: 'Dinaikkan ke DLH',
+    cls: 'bg-purple-50 text-purple-700 border-purple-200',
+    icon: <AlertTriangle className="w-3 h-3 text-purple-600" />,
   },
 };
 
