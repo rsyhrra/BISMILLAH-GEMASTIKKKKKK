@@ -854,6 +854,29 @@ export function getKonflikForRT(rtId: string): Konflik[] {
   return getKonflik().filter((k) => k.rt_id === rtId);
 }
 
+export function getWargaComplianceStatus(citizenId: string): 'PATUH' | 'TIDAK' | 'BELUM' {
+  const db = loadDB();
+  const reports = db.reports
+    .filter((r) => r.citizen_id === citizenId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+  if (reports.length > 0) {
+    const latest = reports[0];
+    if (latest.status === 'APPROVED') return 'PATUH';
+    if (latest.status === 'REJECTED') return 'TIDAK';
+  }
+
+  const samplings = db.sampling
+    .filter((s) => s.citizen_id === citizenId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+  if (samplings.length > 0) {
+    return samplings[0].status === 'PATUH' ? 'PATUH' : 'TIDAK';
+  }
+
+  return 'BELUM';
+}
+
 export function resolveKonflik(id: string, catatan: string): Konflik | null {
   const db = loadDB();
   const konflik = db.konflik.find((k) => k.id === id);
@@ -874,6 +897,23 @@ export function resolveKonflik(id: string, catatan: string): Konflik | null {
       reportToUpdate.points = 5;
       reportToUpdate.audit_source = 'RT_SOLVED';
       reportToUpdate.audit_note = catatan || 'Pernah Melalui Anomali (Sengketa diselesaikan di tingkat RT & dinyatakan Patuh)';
+    }
+
+    // Sync sampling record status to PATUH so UI reflects Patuh!
+    const lastSampling = db.sampling.find((s) => s.citizen_id === konflik.citizen_id);
+    if (lastSampling) {
+      lastSampling.status = 'PATUH';
+    } else {
+      db.sampling.unshift({
+        id: uid('S'),
+        rt_id: konflik.rt_id,
+        citizen_id: konflik.citizen_id,
+        status: 'PATUH',
+        photo: null,
+        lat: -5.1476,
+        lng: 119.4327,
+        created_at: new Date().toISOString(),
+      });
     }
   }
 
@@ -946,6 +986,8 @@ export function resolveKonflikDLH(id: string, decision: 'WARGA_VALID' | 'RT_VALI
     (r) => r.citizen_id === konflik.citizen_id && (r.status === 'REJECTED' || r.status === 'PENDING')
   ) || db.reports.find((r) => r.citizen_id === konflik.citizen_id);
 
+  const lastSampling = db.sampling.find((s) => s.citizen_id === konflik.citizen_id);
+
   if (decision === 'WARGA_VALID') {
     if (citizen) citizen.siri_points += 10;
     if (targetReport) {
@@ -954,6 +996,9 @@ export function resolveKonflikDLH(id: string, decision: 'WARGA_VALID' | 'RT_VALI
       targetReport.audit_source = 'DLH_WARGA_VALID';
       targetReport.audit_note = `Putusan Final DLH: Warga Valid (${catatan || 'Laporan warga terbukti patuh & valid'})`;
     }
+    if (lastSampling) {
+      lastSampling.status = 'PATUH';
+    }
   } else {
     // RT_VALID
     if (targetReport) {
@@ -961,6 +1006,9 @@ export function resolveKonflikDLH(id: string, decision: 'WARGA_VALID' | 'RT_VALI
       targetReport.points = 0;
       targetReport.audit_source = 'DLH_RT_VALID';
       targetReport.audit_note = `Putusan Final DLH: Sampling RT Valid (${catatan || 'Penolakan RT dinyatakan sah & valid'})`;
+    }
+    if (lastSampling) {
+      lastSampling.status = 'TIDAK';
     }
   }
 

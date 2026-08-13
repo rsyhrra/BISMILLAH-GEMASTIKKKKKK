@@ -214,11 +214,16 @@ function SamplingContent() {
                     </p>
                   </div>
                 </div>
-                <StatusBadge
-                  variant={lastSampling ? (lastSampling.status === 'PATUH' ? 'patuh' : 'tidak') : 'belum'}
-                  label={lastSampling ? (lastSampling.status === 'PATUH' ? 'Patuh' : 'Tidak Patuh') : 'Belum Disampling'}
-                  className="shrink-0"
-                />
+                {(() => {
+                  const compStatus = db.getWargaComplianceStatus(w.id);
+                  return (
+                    <StatusBadge
+                      variant={compStatus === 'PATUH' ? 'patuh' : compStatus === 'TIDAK' ? 'tidak' : 'belum'}
+                      label={compStatus === 'PATUH' ? 'Patuh' : compStatus === 'TIDAK' ? 'Tidak Patuh' : 'Belum Disampling'}
+                      className="shrink-0"
+                    />
+                  );
+                })()}
               </div>
 
               {/* DAFTAR LAPORAN MANDIRI PENDING WARGA */}
