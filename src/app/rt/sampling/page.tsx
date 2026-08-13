@@ -9,7 +9,7 @@ import { useApp } from '@/lib/app-context';
 import { useToast } from '@/components/toast';
 import * as db from '@/lib/db';
 import { cn, timeAgo, formatDateTime } from '@/lib/utils';
-import { RefreshCw, MapPin, Check, X, Camera, Loader2, Eye, Leaf, Trash2, Clock, Info, ShieldCheck, Zap } from 'lucide-react';
+import { RefreshCw, MapPin, Check, X, Camera, Loader2, Eye, Leaf, Trash2, Clock, Info, ShieldCheck } from 'lucide-react';
 
 export default function RtSamplingPage() {
   return (
@@ -74,26 +74,6 @@ function SamplingContent() {
       }
     } catch {
       showToast('error', 'Gagal', 'Terjadi kesalahan sistem.');
-    }
-  };
-
-  // 1-Click Fast Sampling for Demo Testing
-  const handleQuickSampling = (citizen: db.DemoUser, status: db.SamplingStatus) => {
-    if (!user) return;
-    const result = db.addSampling(user.id, citizen.id, status, null, -5.14766, 119.43273);
-    load();
-    if (result.anomaly) {
-      showToast(
-        'konflik',
-        'Anomali Dibuat!',
-        `${citizen.full_name} tercatat ${status === 'PATUH' ? 'PATUH' : 'TIDAK PATUH'}. Anomali konflik dikirim ke DLH.`
-      );
-    } else {
-      showToast(
-        'success',
-        'Sampling Tersimpan (Fast 1-Click)',
-        `${citizen.full_name} tercatat ${status === 'PATUH' ? 'PATUH' : 'TIDAK PATUH'}${status === 'PATUH' ? ' (+5 poin)' : ''}.`
-      );
     }
   };
 
@@ -308,28 +288,11 @@ function SamplingContent() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-medium text-[11px]">Belum ada laporan pending baru</span>
-                    <span className="text-[10px] bg-slate-200/70 text-slate-700 font-bold px-2 py-0.5 rounded-md">
-                      Bersih / Nihil
-                    </span>
-                  </div>
-                  {/* QUICK TESTING BUTTONS FOR RT SAMPLING */}
-                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
-                    <button
-                      onClick={() => handleQuickSampling(w, 'PATUH')}
-                      className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-extrabold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition"
-                    >
-                      <Zap className="w-3.5 h-3.5 text-emerald-600" /> Fast-Test: Sidak Patuh
-                    </button>
-                    <button
-                      onClick={() => handleQuickSampling(w, 'TIDAK')}
-                      className="bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-[11px] font-extrabold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1 transition"
-                    >
-                      <Zap className="w-3.5 h-3.5 text-rose-600" /> Fast-Test: Trigger Anomali
-                    </button>
-                  </div>
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-xs flex items-center justify-between">
+                  <span className="text-slate-500 font-medium text-[11px]">Belum ada laporan sampah yang masuk</span>
+                  <span className="text-[10px] bg-slate-200/70 text-slate-700 font-bold px-2 py-0.5 rounded-md">
+                    Bersih / Nihil
+                  </span>
                 </div>
               )}
             </div>
