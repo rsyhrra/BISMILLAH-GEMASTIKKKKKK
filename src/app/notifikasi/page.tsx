@@ -165,7 +165,7 @@ function NotifikasiContent() {
 
                 {resolved && (
                   <p className="mt-3 text-[11px] text-on-surface-variant bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 leading-relaxed">
-                    ✅ {k.catatan || 'Sengketa telah diselesaikan.'}
+                    ✅ {k.catatan ? k.catatan.replace(/ditolak RT/gi, 'terdeteksi anomali pemilahan saat sampling RT') : 'Sengketa telah diselesaikan.'}
                   </p>
                 )}
               </div>
@@ -196,7 +196,9 @@ function NotifikasiContent() {
                   <p className="font-bold text-xs text-on-surface truncate">{n.title}</p>
                   <span className="text-[10px] text-on-surface-variant shrink-0">{timeAgo(n.created_at)}</span>
                 </div>
-                <p className="text-[11px] text-on-surface-variant mt-0.5 leading-snug">{n.message}</p>
+                <p className="text-[11px] text-on-surface-variant mt-0.5 leading-snug">
+                  {n.message.replace(/ditolak RT/gi, 'terdeteksi anomali pemilahan saat sampling RT')}
+                </p>
               </div>
             </div>
           ))}
